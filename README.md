@@ -9,6 +9,12 @@ npm install
 npm run dev
 ```
 
+## Netlify
+
+Repo-ul este pregătit pentru conectare directă în Netlify. Configurația inclusă setează `npm run build` și directorul public `dist`; în mediul Netlify, build-ul activează adaptorul Nitro care generează funcțiile necesare pentru rutele server-rendered.
+
+După conectarea repo-ului, adaugă variabilele din `.env.example` numai după ce conversiile sunt configurate și testate în contul Google Ads.
+
 ## Google Ads și confidențialitate
 
 1. Copiază `.env.example` în `.env.local`.
