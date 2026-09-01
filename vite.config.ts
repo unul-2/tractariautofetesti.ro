@@ -1,6 +1,5 @@
 import { sites } from '@openai/sites-vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
-import { nitro } from 'nitro/vite';
 import vinext from 'vinext';
 import { defineConfig } from 'vite';
 import hostingConfig from './.openai/hosting.json' with { type: 'json' };
@@ -46,7 +45,9 @@ export default defineConfig(async () => {
 
   if (isNetlifyBuild) {
     return {
-      plugins: [tailwindcss(), vinext(), sites(), nitro()],
+      // Netlify receives a static export in `dist`, so it does not need the
+      // Nitro SSR function that was returning 500 in production.
+      plugins: [tailwindcss(), vinext(), sites()],
     };
   }
 

@@ -1,6 +1,8 @@
 [build]
 command = "npm run build"
-publish = "dist"
+# Vinext writes the fully pre-rendered site here. Publishing this directory
+# deliberately avoids deploying its optional SSR build artifacts/functions.
+publish = "dist/client"
 
 [build.environment]
 NODE_VERSION = "22"
