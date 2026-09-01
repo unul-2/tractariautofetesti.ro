@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
     // Netlify serves the responsive source image directly; no Next image API is
     // required for this small, static site.
     unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.googleusercontent.com',
+      },
+    ],
   },
 };
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from 'react';
 import { GoogleAdsTracking } from '@/components/google-ads-tracking';
+import { SiteAnalytics } from '@/components/site-analytics';
 
 type Consent = 'accepted' | 'rejected' | null;
 
@@ -66,7 +67,12 @@ export function CookieConsent() {
 
   return (
     <>
-      {consent === 'accepted' ? <GoogleAdsTracking /> : null}
+      {consent === 'accepted' ? (
+        <>
+          <GoogleAdsTracking />
+          <SiteAnalytics />
+        </>
+      ) : null}
       {visible ? (
         <aside
           className="fixed inset-x-3 bottom-3 z-50 mx-auto max-w-xl rounded-2xl border border-[#d9e1e8] bg-white p-5 text-[#14283f] shadow-[0_18px_60px_rgba(7,24,39,.22)]"
@@ -77,8 +83,9 @@ export function CookieConsent() {
           </p>
           <p className="mt-2 text-xs leading-5 text-[#53677d]">
             Folosim strict date tehnice necesare pentru funcționare.
-            Cookie-urile de marketing pentru măsurarea reclamelor Google pornesc
-            numai dacă le accepți. Poți refuza fără să pierzi accesul la site.
+            Cookie-urile de marketing și măsurarea agregată a butoanelor de apel
+            sau WhatsApp pornesc numai dacă le accepți. Poți refuza fără să pierzi
+            accesul la site.
           </p>
           <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
             <button

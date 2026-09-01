@@ -37,6 +37,14 @@ const organizationSchema = {
   name: 'Tractări Auto Fetești',
   url: 'https://www.tractariautofetesti.ro',
   telephone: '+40723511865',
+  email: 'tractariautofetesti24@gmail.com',
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: 'Strada Călărași nr. 1',
+    addressLocality: 'Fetești',
+    addressRegion: 'Ialomița',
+    addressCountry: 'RO',
+  },
   areaServed: [
     'Fetești',
     'A2 Autostrada Soarelui',

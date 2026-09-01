@@ -71,7 +71,8 @@ export default function PrivacyPage() {
             </li>
             <li>
               numai cu acordul tău, pentru măsurarea eficienței reclamelor
-              Google.
+              Google și pentru statistici agregate despre accesări și apăsările
+              pe Call sau WhatsApp.
             </li>
           </ul>
 
@@ -82,6 +83,13 @@ export default function PrivacyPage() {
             Google Ads nu sunt încărcate până când nu alegi „Accept marketing”.
             Refuzul nu limitează accesul la conținutul sau funcțiile esențiale
             ale site-ului.
+          </p>
+          <p>
+            După acceptare, dashboardul păstrează doar evenimente tehnice
+            agregate: pagina accesată, tipul dispozitivului, sursa de campanie
+            și faptul că a fost apăsat un buton. Nu stocăm acolo coordonatele
+            trimise prin WhatsApp, numărul de telefon, conversațiile sau adresa
+            IP.
           </p>
           <p>
             <CookiePreferencesButton className="font-bold text-[#9f6504] underline underline-offset-4">
@@ -98,6 +106,15 @@ export default function PrivacyPage() {
             transfer în afara Spațiului Economic European vor fi completate în
             versiunea finală a politicii, pe baza configurației reale a
             serviciilor folosite.
+          </p>
+          <p>
+            Dacă este activată secțiunea de recenzii live, site-ul solicită prin
+            server date publice din Google Maps pentru a le afișa cu atribuirea
+            cerută de Google. Consultă{' '}
+            <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">
+              politica de confidențialitate Google
+            </a>{' '}
+            pentru modul în care Google procesează aceste servicii.
           </p>
 
           <h2>6. Cât timp sunt păstrate datele</h2>

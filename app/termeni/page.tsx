@@ -52,6 +52,25 @@ export default function TermsPage() {
             sau statistici fără confirmarea operatorului.
           </p>
 
+          <h2>Conținut Google Maps</h2>
+          <p>
+            Când este activată secțiunea de recenzii live, ratingul și opiniile
+            sunt furnizate de Google Maps. Ele pot fi actualizate, eliminate sau
+            indisponibile în orice moment. Fiecare opinie afișată păstrează
+            autorul și accesul direct la sursa sa pe Google Maps.
+          </p>
+          <p>
+            Utilizarea conținutului Google Maps este supusă{' '}
+            <a href="https://www.google.com/help/terms_maps/" target="_blank" rel="noreferrer">
+              termenilor Google Maps
+            </a>{' '}
+            și{' '}
+            <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">
+              politicii de confidențialitate Google
+            </a>
+            .
+          </p>
+
           <h2>Modificări</h2>
           <p>
             Operatorul poate actualiza aceste pagini atunci când se modifică

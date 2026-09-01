@@ -5,6 +5,7 @@ import {
   phoneNumber,
   WhatsAppLocationButton,
 } from '@/components/conversion-links';
+import { GoogleReviews } from '@/components/google-reviews';
 
 const services = [
   {
@@ -130,11 +131,12 @@ export default function Home() {
               · A2 · Dobrogea
             </p>
             <h1 className="max-w-xl text-4xl font-extrabold leading-[1.03] tracking-[-.045em] text-balance sm:text-6xl">
-              Rămâi în siguranță. De restul ne ocupăm noi.
+              Tractări Auto Fetești Non-Stop.
             </h1>
             <p className="mt-6 max-w-lg text-base leading-7 text-white/82 sm:text-lg">
-              Tractare auto și asistență rutieră non-stop, cu comunicare clară
-              înainte de plecare: disponibilitate, timp estimat și cost.
+              Ai rămas în pană pe A2 sau în Fetești? Sună acum și ieși rapid
+              din impas — flotă proprie, preț corect și comunicare clară înainte
+              de plecare.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <PhoneLink className="inline-flex min-h-14 items-center justify-center rounded-xl bg-[#f7a71b] px-6 text-base font-extrabold text-[#071827] shadow-xl shadow-black/20 transition hover:-translate-y-0.5 hover:bg-[#ffc558]">
@@ -144,6 +146,9 @@ export default function Home() {
                 WhatsApp + locație
               </WhatsAppLocationButton>
             </div>
+            <a className="mt-5 inline-block text-sm font-bold text-white/80 underline underline-offset-4 hover:text-[#ffd06e]" href="mailto:tractariautofetesti24@gmail.com">
+              tractariautofetesti24@gmail.com
+            </a>
             <p className="mt-4 text-xs leading-5 text-white/60">
               Apelul este cea mai rapidă cale. WhatsApp-ul îți permite să
               trimiți poziția, doar dacă alegi tu.
@@ -299,36 +304,8 @@ export default function Home() {
         </div>
       </section>
 
-      <section
-        id="recenzii"
-        className="mx-auto max-w-7xl scroll-mt-10 px-5 py-20 sm:px-8 lg:px-10 lg:py-28"
-      >
-        <div className="grid gap-9 rounded-3xl border border-[#dce2e9] bg-white p-7 shadow-[0_18px_55px_rgba(17,34,56,.07)] sm:p-10 lg:grid-cols-[1fr_.85fr] lg:items-center">
-          <div>
-            <p className="section-kicker">Recenzii</p>
-            <h2 className="section-title">
-              Încrederea se verifică, nu se inventează.
-            </h2>
-            <p className="section-copy">
-              Păstrăm accesul direct către recenziile publice. Înainte de
-              publicare, vom conecta aici profilul Google Business corect și,
-              dacă dorim, doar recenziile aprobate de client.
-            </p>
-          </div>
-          <a
-            className="group flex min-h-32 flex-col justify-between rounded-2xl bg-[#0c2035] p-6 text-white transition hover:-translate-y-0.5"
-            href="https://www.google.com/search?q=Tractari+Auto+Fetesti"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <span className="text-sm font-bold text-[#ffd06e]">
-              Recenzii Google
-            </span>
-            <span className="flex items-end justify-between gap-4 text-2xl font-extrabold tracking-[-.03em]">
-              Vezi opiniile clienților <span aria-hidden="true">↗</span>
-            </span>
-          </a>
-        </div>
+      <section id="recenzii" className="mx-auto max-w-7xl scroll-mt-10 px-5 py-20 sm:px-8 lg:px-10 lg:py-28">
+        <GoogleReviews />
       </section>
 
       <section
@@ -353,20 +330,23 @@ export default function Home() {
                 WhatsApp + locație
               </WhatsAppLocationButton>
             </div>
+            <a className="mt-5 inline-block text-sm font-bold text-white/80 underline underline-offset-4 hover:text-[#ffd06e]" href="mailto:tractariautofetesti24@gmail.com">
+              tractariautofetesti24@gmail.com
+            </a>
           </div>
           <a
             className="flex min-h-72 flex-col justify-end rounded-3xl border border-white/15 bg-[radial-gradient(circle_at_70%_28%,rgba(247,167,27,.32),transparent_25%),linear-gradient(145deg,#173a58,#081725)] p-7 transition hover:border-[#f7a71b]/60"
-            href="https://www.google.com/maps/search/?api=1&query=Fetesti%2C%20Romania"
+            href="https://www.google.com/maps/place/Tractari+Auto/@44.3732589,27.8391185,17z/data=!4m8!3m7!1s0x40b071ea7db3ce0b:0xbe0630d2e820814a!8m2!3d44.3732589!4d27.8391185!9m1!1b1!16s%2Fg%2F11xn6j9csd"
             target="_blank"
             rel="noreferrer"
           >
             <p className="text-sm font-bold text-[#ffd06e]">Punct de pornire</p>
             <p className="mt-2 text-3xl font-extrabold tracking-[-.03em]">
-              Fetești
+              Strada Călărași nr. 1, Fetești
             </p>
             <p className="mt-3 max-w-xs text-sm leading-6 text-white/75">
-              Deschide harta pentru orientare. La apel confirmăm intervenția la
-              locația ta exactă.
+              Punct de lucru declarat în profilul Google. La apel confirmăm
+              intervenția la locația ta exactă.
             </p>
             <span className="mt-6 text-sm font-extrabold">
               Deschide în Google Maps ↗
@@ -445,6 +425,9 @@ export default function Home() {
               <PhoneLink className="font-bold text-[#ffd06e] hover:text-white">
                 {phoneNumber}
               </PhoneLink>
+              <a className="hover:text-[#ffd06e]" href="mailto:tractariautofetesti24@gmail.com">
+                Email
+              </a>
             </div>
           </div>
         </div>

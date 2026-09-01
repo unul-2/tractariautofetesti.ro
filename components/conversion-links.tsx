@@ -1,6 +1,7 @@
 'use client';
 
 import type { AnchorHTMLAttributes } from 'react';
+import { trackSiteEvent } from '@/components/site-analytics';
 
 const phoneNumber = '0723 511 865';
 const phoneHref = 'tel:+40723511865';
@@ -33,6 +34,7 @@ export function PhoneLink({
       {...props}
       href={phoneHref}
       onClick={(event) => {
+        trackSiteEvent('call_click');
         trackConversion(conversionLabel);
         onClick?.(event);
       }}
@@ -60,6 +62,7 @@ export function WhatsAppLocationButton({
       'Vă rog să-mi confirmați disponibilitatea, timpul estimat și costul.',
     ].join('\n');
 
+    trackSiteEvent(locationText ? 'whatsapp_location_click' : 'whatsapp_click');
     trackConversion(conversionLabel);
     window.open(
       `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`,
