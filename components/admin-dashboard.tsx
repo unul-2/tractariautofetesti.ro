@@ -16,6 +16,33 @@ type Metrics = {
   sources: { label: string; value: number }[];
 };
 
+type DashboardUser = Pick<User, 'email' | 'roles'>;
+
+// This is a presentation-only switch for the temporary Netlify test site.
+// It never grants access to the real metrics endpoint.
+const demoDashboardEnabled = process.env.NEXT_PUBLIC_ADMIN_DEMO_ENABLED === 'true';
+const demoCredentials = { email: '1@1.com', password: '1234' };
+const demoMetrics: Metrics = {
+  summary: {
+    sessions: 86,
+    pageViews: 112,
+    callClicks: 19,
+    whatsappClicks: 11,
+    whatsappLocationClicks: 7,
+    callClickRate: 18.6,
+  },
+  devices: [
+    { label: 'mobile', value: 71 },
+    { label: 'desktop', value: 13 },
+    { label: 'tablet', value: 2 },
+  ],
+  sources: [
+    { label: 'google', value: 48 },
+    { label: 'Direct / necunoscut', value: 31 },
+    { label: 'facebook', value: 7 },
+  ],
+};
+
 const cards: { key: keyof Metrics['summary']; label: string; hint: string }[] = [
   { key: 'sessions', label: 'Sesiuni', hint: 'vizitatori aproximativi, fără identificare' },
   { key: 'callClicks', label: 'Apăsări pe „Sună”', hint: 'intenție de apel, nu apel confirmat' },
@@ -56,7 +83,11 @@ function LoginPanel({ onLogin }: { onLogin: (email: string, password: string) =>
       <button className="min-h-11 rounded-lg bg-[#0c2035] px-4 text-sm font-extrabold text-white transition hover:bg-[#173a58] disabled:cursor-wait disabled:opacity-60" type="submit" disabled={busy}>
         {busy ? 'Se verifică…' : 'Intră în dashboard'}
       </button>
-      <p className="text-xs leading-5 text-[#65788b]">Conturile sunt doar pe invitație. Nu există înregistrare publică.</p>
+      <p className="text-xs leading-5 text-[#65788b]">
+        {demoDashboardEnabled
+          ? 'Mod demo de prezentare: date fictive, fără acces la Netlify sau metrici reale.'
+          : 'Conturile sunt doar pe invitație. Nu există înregistrare publică.'}
+      </p>
     </form>
   );
 }
@@ -80,9 +111,10 @@ function Breakdown({ title, values }: { title: string; values: { label: string; 
 }
 
 export function AdminDashboard() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<DashboardUser | null>(null);
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'unauthorized' | 'error'>('loading');
+  const [isDemoDashboard, setIsDemoDashboard] = useState(false);
 
   const loadMetrics = async () => {
     setStatus('loading');
@@ -114,11 +146,31 @@ export function AdminDashboard() {
   }, []);
 
   const handleLogin = async (email: string, password: string) => {
+    if (
+      demoDashboardEnabled &&
+      email === demoCredentials.email &&
+      password === demoCredentials.password
+    ) {
+      setUser({ email, roles: ['admin'] });
+      setMetrics(demoMetrics);
+      setStatus('ready');
+      setIsDemoDashboard(true);
+      return;
+    }
+
     await login(email, password);
     window.location.assign('/admin');
   };
 
   const handleLogout = async () => {
+    if (isDemoDashboard) {
+      setUser(null);
+      setMetrics(null);
+      setStatus('unauthorized');
+      setIsDemoDashboard(false);
+      return;
+    }
+
     await logout();
     window.location.assign('/admin');
   };
@@ -130,13 +182,24 @@ export function AdminDashboard() {
       <div className="flex flex-col justify-between gap-4 rounded-2xl border border-[#dce2e9] bg-white p-5 sm:flex-row sm:items-center">
         <div>
           <p className="text-sm font-extrabold text-[#1e344b]">{user.email}</p>
-          <p className="mt-1 text-sm text-[#52657a]">Ultimele 14 zile · date agregate după acceptarea măsurării</p>
+          <p className="mt-1 text-sm text-[#52657a]">
+            {isDemoDashboard
+              ? 'Demo de prezentare · date fictive, fără acces la metricile reale'
+              : 'Ultimele 14 zile · date agregate după acceptarea măsurării'}
+          </p>
         </div>
         <div className="flex gap-2">
-          <button className="rounded-lg border border-[#cbd6e2] px-4 py-2.5 text-sm font-bold text-[#30465d]" type="button" onClick={() => void loadMetrics()}>Actualizează</button>
+          <button className="rounded-lg border border-[#cbd6e2] px-4 py-2.5 text-sm font-bold text-[#30465d]" type="button" onClick={() => (isDemoDashboard ? setMetrics(demoMetrics) : void loadMetrics())}>Actualizează</button>
           <button className="rounded-lg bg-[#0c2035] px-4 py-2.5 text-sm font-bold text-white" type="button" onClick={() => void handleLogout()}>Ieși</button>
         </div>
       </div>
+
+      {isDemoDashboard ? (
+        <div className="mt-5 rounded-2xl border border-[#f3c76b] bg-[#fff7e7] p-4 text-[#714b08]" role="status">
+          <p className="text-sm font-extrabold">DEMO DE PREZENTARE</p>
+          <p className="mt-1 text-sm leading-6">Valorile de mai jos sunt exemple pentru client. Nu sunt date despre vizitatori și nu pot fi folosite pentru raportarea Google Ads.</p>
+        </div>
+      ) : null}
 
       {status === 'loading' ? <p className="mt-6 text-sm font-semibold text-[#52657a]" aria-live="polite">Se încarcă datele…</p> : null}
       {status === 'error' ? <p className="mt-6 rounded-xl bg-[#fff1ee] p-4 text-sm font-semibold text-[#9a3412]">Datele nu au putut fi încărcate. Verifică dacă Netlify Identity și Netlify Blobs sunt activate pentru acest proiect.</p> : null}

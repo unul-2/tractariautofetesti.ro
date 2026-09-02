@@ -48,6 +48,8 @@ Pagina `/admin` nu conține date sensibile în HTML. Datele sunt oferite exclusi
 
 Măsurarea pornește numai după „Accept marketing”. Păstrează evenimente agregate (pagină, tip dispozitiv, sursă UTM, apăsări pe Call/WhatsApp), fără IP, număr de telefon, conversație sau coordonate GPS. O funcție programată șterge datele mai vechi decât perioada configurată. „Apăsare pe Sună” este un semnal de intenție, nu dovada unui apel finalizat; conversiile reale de apel rămân în Google Ads.
 
+Pentru prezentarea temporară pe site-ul Netlify de test, poți activa `NEXT_PUBLIC_ADMIN_DEMO_ENABLED=true`. Atunci `/admin` acceptă contul demo `1@1.com` cu parola `1234` și afișează clar numai date fictive; nu există un cont real, nu poate citi endpointul de metrici și nu oferă acces la Netlify. Elimină variabila înainte de lansarea publică. În Netlify, autentificarea reală rămâne prin Identity și rolul `admin`.
+
 ## Înainte de publicare
 
 - Confirmă denumirea legală, CUI/CIF, sediul și adresa de contact pentru date personale.
