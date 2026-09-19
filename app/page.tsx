@@ -37,30 +37,30 @@ const copy = {
       call: 'Sună',
     },
     brandSubline: '24/7 · A2 · Ialomița',
-    availability: 'Disponibilitate non-stop',
+    availability: 'Intervenții 24/7',
     verifiedReviews: 'Recenzii Google verificate',
-    heroLine1: 'Tractări auto',
-    heroLine2: 'Fetești & A2.',
-    heroLine3: 'Ajutor fără complicații.',
+    heroLine1: 'Tractări auto Fetești.',
+    heroLine2: 'Ai rămas pe drum?',
+    heroLine3: 'Sună-ne direct.',
     heroCopy:
-      'Ai rămas în pană sau mașina nu mai poate circula? Ne spui unde ești, ce vehicul ai și destinația. Confirmăm clar intervenția înainte de plecare.',
+      'Pornim din Fetești și intervenim în mod uzual pe o rază de aproximativ 40–50 km, inclusiv în zona A2. Pentru mai departe, confirmăm la telefon înainte de plecare.',
     callNow: 'Sună acum',
     whatsappLocation: 'WhatsApp + locație',
-    safePickup: 'Preluare în siguranță',
-    timeAndCost: 'Timp și cost confirmate telefonic',
-    quickIntervention: 'Intervenție rapidă',
-    tellUs3: 'Spune-ne 3 lucruri.',
+    safePickup: 'Fără formulare',
+    timeAndCost: 'Cost confirmat înainte de plecare',
+    quickIntervention: 'Zonă reală de intervenție',
+    tellUs3: 'Fetești → A2 → ~40–50 km',
     heroSteps: [
-      ['01', 'Unde ești', 'Trimite locația sau reperul exact.'],
-      ['02', 'Ce mașină ai', 'Marcă, model și situația pe scurt.'],
-      ['03', 'Unde mergem', 'Service, domiciliu sau altă destinație.'],
+      ['01', 'Fetești', 'Punctul nostru de plecare.'],
+      ['02', '≈ 40–50 km', 'Zona uzuală de intervenție.'],
+      ['03', 'Mai departe', 'Confirmăm telefonic înainte de plecare.'],
     ],
     noInventedPrices:
-      'Nu afișăm timpi sau tarife inventate. Confirmăm situația concretă înainte de plecare.',
+      'Pentru distanțe mai mari decât zona uzuală, discutăm cazul la telefon și confirmăm dacă putem prelua intervenția.',
     proof: [
-      ['24/7', 'Disponibilitate'],
-      ['A2', 'Zona Fetești'],
-      ['Direct', 'Confirmare la telefon'],
+      ['Fetești', 'Punct de plecare'],
+      ['~50 km', 'Zona uzuală'],
+      ['24/7', 'Telefon direct'],
     ],
     servicesKicker: 'Servicii',
     servicesTitle: 'Exact ce ai nevoie când mașina nu mai merge.',
@@ -168,30 +168,30 @@ const copy = {
       call: 'Call',
     },
     brandSubline: '24/7 · A2 · Ialomița',
-    availability: 'Available 24/7',
+    availability: '24/7 roadside response',
     verifiedReviews: 'Verified Google reviews',
-    heroLine1: 'Vehicle recovery',
-    heroLine2: 'Fetești & A2.',
-    heroLine3: 'Straightforward roadside help.',
+    heroLine1: 'Vehicle recovery Fetești.',
+    heroLine2: 'Stranded on the road?',
+    heroLine3: 'Call us directly.',
     heroCopy:
-      'Broken down or unable to drive safely? Tell us where you are, what vehicle you have and where it needs to go. We confirm availability, timing and cost before departure.',
+      'We start from Fetești and normally cover approximately 40–50 km, including the nearby A2 area. For longer distances, call first and we will confirm before departure.',
     callNow: 'Call now',
     whatsappLocation: 'WhatsApp + location',
-    safePickup: 'Safe vehicle recovery',
-    timeAndCost: 'Timing and cost confirmed by phone',
-    quickIntervention: 'Quick response',
-    tellUs3: 'Tell us 3 things.',
+    safePickup: 'No forms',
+    timeAndCost: 'Cost confirmed before departure',
+    quickIntervention: 'Real service area',
+    tellUs3: 'Fetești → A2 → ~40–50 km',
     heroSteps: [
-      ['01', 'Where you are', 'Send your location or the nearest landmark.'],
-      ['02', 'What you drive', 'Make, model and a short description of the problem.'],
-      ['03', 'Where it goes', 'Garage, home or another agreed destination.'],
+      ['01', 'Fetești', 'Our starting point.'],
+      ['02', '≈ 40–50 km', 'Our usual service area.'],
+      ['03', 'Further away', 'Call first and we confirm before departure.'],
     ],
     noInventedPrices:
-      'We do not display made-up arrival times or prices. We confirm the real situation before departure.',
+      'For distances beyond our usual area, call us first and we will confirm whether we can take the job.',
     proof: [
-      ['24/7', 'Availability'],
-      ['A2', 'Fetești area'],
-      ['Direct', 'Phone confirmation'],
+      ['Fetești', 'Starting point'],
+      ['~50 km', 'Usual area'],
+      ['24/7', 'Direct phone'],
     ],
     servicesKicker: 'Services',
     servicesTitle: 'The roadside help you need when the car stops.',
@@ -450,23 +450,40 @@ export default function Home() {
             </div>
           </div>
 
-          <aside className="hero-panel hidden rounded-[2rem] border border-white/13 bg-[#071827]/72 p-5 shadow-[0_28px_80px_rgba(0,0,0,.28)] backdrop-blur-xl lg:block">
-            <div className="rounded-[1.55rem] border border-white/10 bg-white/[.055] p-6">
-              <p className="text-xs font-black uppercase tracking-[.14em] text-[#ffd36f]">{t.quickIntervention}</p>
-              <h2 className="mt-3 text-2xl font-black tracking-[-.04em]">{t.tellUs3}</h2>
-              <div className="mt-6 grid gap-3">
+          <aside className="hero-panel hidden overflow-hidden rounded-[2rem] border border-white/13 bg-[#071827]/76 p-5 shadow-[0_28px_80px_rgba(0,0,0,.32)] backdrop-blur-xl lg:block">
+            <div className="rounded-[1.55rem] border border-white/10 bg-white/[.045] p-6">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[.14em] text-[#ffd36f]">{t.quickIntervention}</p>
+                  <h2 className="mt-2 text-2xl font-black tracking-[-.04em]">{t.tellUs3}</h2>
+                </div>
+                <Navigation className="h-5 w-5 text-[#ffd36f]" aria-hidden="true" />
+              </div>
+
+              <div className="hero-zone-map mt-7" aria-hidden="true">
+                <span className="hero-zone-ring hero-zone-ring-outer" />
+                <span className="hero-zone-ring hero-zone-ring-middle" />
+                <span className="hero-zone-ring hero-zone-ring-inner" />
+                <span className="hero-zone-axis hero-zone-axis-x" />
+                <span className="hero-zone-axis hero-zone-axis-y" />
+                <div className="hero-zone-radius-label">~40–50 KM</div>
+                <div className="hero-zone-core">
+                  <Navigation className="h-4 w-4" />
+                  <strong>FETEȘTI</strong>
+                  <small>START</small>
+                </div>
+              </div>
+
+              <div className="mt-6 grid grid-cols-3 gap-2">
                 {t.heroSteps.map(([number, title, stepCopy]) => (
-                  <div key={number} className="group flex gap-4 rounded-2xl border border-white/8 bg-black/10 p-4 transition hover:border-[#f6a817]/35 hover:bg-[#f6a817]/7">
-                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#f6a817] text-xs font-black text-[#071827]">
-                      {number}
-                    </span>
-                    <div>
-                      <p className="text-sm font-black">{title}</p>
-                      <p className="mt-1 text-xs leading-5 text-white/52">{stepCopy}</p>
-                    </div>
+                  <div key={number} className="rounded-xl border border-white/8 bg-black/12 p-3">
+                    <span className="text-[10px] font-black uppercase tracking-[.12em] text-[#f6a817]">{number}</span>
+                    <p className="mt-1.5 text-xs font-black text-white">{title}</p>
+                    <p className="mt-1 text-[10px] leading-4 text-white/45">{stepCopy}</p>
                   </div>
                 ))}
               </div>
+
               <p className="mt-5 border-t border-white/10 pt-5 text-xs leading-5 text-white/48">
                 {t.noInventedPrices}
               </p>
