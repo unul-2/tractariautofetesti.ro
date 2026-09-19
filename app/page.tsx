@@ -343,7 +343,7 @@ export default function Home() {
               <span className="brand-mark grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#f6a817] text-[13px] font-black tracking-[-.04em] text-[#071827]">
                 TA
               </span>
-              <span className="min-w-0 leading-tight">
+              <span className="hidden min-w-0 leading-tight sm:block">
                 <span className="block truncate text-sm font-black tracking-[-.01em] sm:text-[15px]">
                   Tractări Auto Fetești
                 </span>
