@@ -75,13 +75,13 @@ export function CookieConsent() {
       ) : null}
       {visible ? (
         <aside
-          className="fixed inset-x-3 bottom-3 z-50 mx-auto max-w-xl rounded-2xl border border-[#d9e1e8] bg-white p-5 text-[#14283f] shadow-[0_18px_60px_rgba(7,24,39,.22)]"
+          className="fixed inset-x-3 bottom-3 z-50 mx-auto max-w-xl rounded-[1.4rem] border border-white/10 bg-[#071827]/95 p-5 text-white shadow-[0_22px_70px_rgba(7,24,39,.4)] backdrop-blur-xl"
           aria-label="Preferințe cookie"
         >
           <p className="text-sm font-extrabold">
             Confidențialitatea ta contează
           </p>
-          <p className="mt-2 text-xs leading-5 text-[#53677d]">
+          <p className="mt-2 text-xs leading-5 text-white/62">
             Folosim strict date tehnice necesare pentru funcționare.
             Cookie-urile de marketing și măsurarea agregată a butoanelor de apel
             sau WhatsApp pornesc numai dacă le accepți. Poți refuza fără să pierzi
@@ -89,14 +89,14 @@ export function CookieConsent() {
           </p>
           <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
             <button
-              className="min-h-10 rounded-lg border border-[#cbd6e2] px-4 text-sm font-bold transition hover:bg-[#f2f5f8]"
+              className="min-h-11 rounded-xl border border-white/14 bg-white/[.05] px-4 text-sm font-bold text-white transition hover:bg-white/[.1]"
               type="button"
               onClick={() => save('rejected')}
             >
               Doar necesare
             </button>
             <button
-              className="min-h-10 rounded-lg bg-[#f7a71b] px-4 text-sm font-extrabold text-[#071827] transition hover:bg-[#ffc558]"
+              className="min-h-11 rounded-xl bg-[#f6a817] px-4 text-sm font-black text-[#071827] transition hover:bg-[#ffc451]"
               type="button"
               onClick={() => save('accepted')}
             >
