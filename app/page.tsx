@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ArrowRight,
   BadgeCheck,
@@ -294,6 +294,8 @@ const copy = {
 
 export default function Home() {
   const [language, setLanguage] = useState<Language>('ro');
+  const [showMobileActions, setShowMobileActions] = useState(false);
+  const heroRef = useRef<HTMLElement>(null);
   const t = copy[language];
 
   useEffect(() => {
@@ -308,6 +310,21 @@ export default function Home() {
     return () => window.clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    const hero = heroRef.current;
+    if (!hero) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowMobileActions(!entry?.isIntersecting);
+      },
+      { threshold: 0 },
+    );
+
+    observer.observe(hero);
+    return () => observer.disconnect();
+  }, []);
+
   const switchLanguage = (next: Language) => {
     setLanguage(next);
     window.localStorage.setItem(languageStorageKey, next);
@@ -318,6 +335,7 @@ export default function Home() {
   return (
     <main className="overflow-x-clip bg-[#f4f6f8] text-[#102235]">
       <section
+        ref={heroRef}
         id="sus"
         className="roadside-hero relative isolate min-h-[760px] overflow-hidden bg-[#061522] text-white"
       >
@@ -344,8 +362,14 @@ export default function Home() {
               className="flex min-w-0 items-center gap-3"
               aria-label="Tractări Auto Fetești"
             >
-              <span className="brand-mark grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#f6a817] text-[13px] font-black tracking-[-.04em] text-[#071827]">
-                TA
+              <span className="brand-mark relative h-13 w-13 shrink-0 overflow-hidden rounded-xl bg-[#071827]">
+                <Image
+                  src="/tractari-auto-fetesti-logo.webp"
+                  alt=""
+                  fill
+                  sizes="52px"
+                  className="object-cover"
+                />
               </span>
               <span className="hidden min-w-0 leading-tight sm:block">
                 <span className="block truncate text-sm font-black tracking-[-.01em] sm:text-[15px]">
@@ -709,7 +733,15 @@ export default function Home() {
         <div className="mx-auto grid max-w-7xl gap-10 px-5 sm:grid-cols-[1.3fr_.7fr_.7fr] sm:px-8 lg:px-10">
           <div>
             <div className="flex items-center gap-3">
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#f6a817] text-xs font-black text-[#071827]">TA</span>
+              <span className="relative h-11 w-11 overflow-hidden rounded-xl bg-[#071827]">
+                <Image
+                  src="/tractari-auto-fetesti-logo.webp"
+                  alt=""
+                  fill
+                  sizes="44px"
+                  className="object-cover"
+                />
+              </span>
               <p className="text-lg font-black text-white">Tractări Auto Fetești</p>
             </div>
             <p className="mt-4 max-w-sm text-sm leading-6">{t.footerCopy}</p>
@@ -742,16 +774,18 @@ export default function Home() {
         </div>
       </footer>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-[1.15fr_.85fr] gap-2 border-t border-white/8 bg-[#061522]/95 p-2.5 shadow-[0_-12px_38px_rgba(7,24,39,.28)] backdrop-blur-xl sm:hidden">
-        <PhoneLink className="inline-flex min-h-13 items-center justify-center gap-2 rounded-xl bg-[#f6a817] px-3 text-sm font-black text-[#071827]">
-          <Phone className="h-4 w-4" aria-hidden="true" />
-          {t.mobileCall}
-        </PhoneLink>
-        <WhatsAppLocationButton className="inline-flex min-h-13 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[.08] px-3 text-sm font-black text-white">
-          <MessageCircle className="h-4 w-4" aria-hidden="true" />
-          WhatsApp
-        </WhatsAppLocationButton>
-      </div>
+      {showMobileActions ? (
+        <div className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-[1.15fr_.85fr] gap-2 border-t border-white/8 bg-[#061522]/95 p-2.5 shadow-[0_-12px_38px_rgba(7,24,39,.28)] backdrop-blur-xl sm:hidden">
+          <PhoneLink className="inline-flex min-h-13 items-center justify-center gap-2 rounded-xl bg-[#f6a817] px-3 text-sm font-black text-[#071827]">
+            <Phone className="h-4 w-4" aria-hidden="true" />
+            {t.mobileCall}
+          </PhoneLink>
+          <WhatsAppLocationButton className="inline-flex min-h-13 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[.08] px-3 text-sm font-black text-white">
+            <MessageCircle className="h-4 w-4" aria-hidden="true" />
+            WhatsApp
+          </WhatsAppLocationButton>
+        </div>
+      ) : null}
     </main>
   );
 }
