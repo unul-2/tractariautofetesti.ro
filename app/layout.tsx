@@ -45,20 +45,18 @@ const organizationSchema = {
     addressRegion: 'Ialomița',
     addressCountry: 'RO',
   },
-  areaServed: [
-    'Fetești',
-    'A2 Autostrada Soarelui',
-    'Cernavodă',
-    'Hârșova',
-    'Medgidia',
-    'Constanța',
-    'Călărași',
-    'Slobozia',
-    'Brăila',
-  ],
+  areaServed: {
+    '@type': 'GeoCircle',
+    geoMidpoint: {
+      '@type': 'GeoCoordinates',
+      latitude: 44.3732589,
+      longitude: 27.8391185,
+    },
+    geoRadius: 50000,
+  },
   openingHours: 'Mo-Su 00:00-23:59',
   description:
-    'Tractare auto și asistență rutieră pentru Fetești și zona de acoperire confirmată telefonic.',
+    'Tractare auto și asistență rutieră cu punct de plecare din Fetești, în mod uzual pe o rază de aproximativ 40–50 km; distanțele mai mari se confirmă telefonic.',
 };
 
 export default function RootLayout({
