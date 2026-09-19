@@ -31,7 +31,7 @@ const copy = {
     kicker: 'Recenzii Google',
     title: 'Încrederea se verifică.',
     intro:
-      'Ratingul și opiniile sunt solicitate din Google Maps. Păstrăm autorul, sursa și accesul către profilul original.',
+      'Recenzii live din Google Maps, cu autorul și legătura către sursa originală.',
     reviewCount: 'recenzii Google',
     profile: 'Vezi profilul Google',
     supplied: 'Opinii furnizate de Google Maps',
@@ -46,7 +46,7 @@ const copy = {
     kicker: 'Google reviews',
     title: 'Trust should be verifiable.',
     intro:
-      'Ratings and reviews are requested from Google Maps. We keep the author, source and direct access to the original profile.',
+      'Live Google Maps reviews, with the author and a direct link to the original source.',
     reviewCount: 'Google reviews',
     profile: 'View Google profile',
     supplied: 'Reviews provided by Google Maps',
@@ -125,22 +125,22 @@ export function GoogleReviews({ language = 'ro' }: { language?: Language }) {
       className="overflow-hidden rounded-[2rem] border border-[#d6dfe7] bg-white shadow-[0_24px_65px_rgba(13,34,52,.07)]"
     >
       <div className="grid lg:grid-cols-[.82fr_1.18fr]">
-        <div className="relative overflow-hidden bg-[#0b2235] p-7 text-white sm:p-10 lg:p-12">
+        <div className="relative overflow-hidden bg-[#0b2235] p-6 text-white sm:p-9 lg:p-12">
           <div
             className="absolute -left-20 top-12 h-56 w-56 rounded-full bg-[#f6a817]/15 blur-3xl"
             aria-hidden="true"
           />
           <div className="relative z-10">
             <p className="section-kicker text-[#ffd36f]">{t.kicker}</p>
-            <h2 className="mt-4 text-4xl font-black leading-[1.02] tracking-[-.05em] sm:text-5xl">
+            <h2 className="mt-3 text-3xl font-black leading-[1.02] tracking-[-.05em] sm:mt-4 sm:text-5xl">
               {t.title}
             </h2>
-            <p className="mt-5 max-w-lg text-sm leading-6 text-white/60">{t.intro}</p>
+            <p className="mt-3 max-w-lg text-sm leading-6 text-white/60 sm:mt-5">{t.intro}</p>
 
             {state === 'ready' && data ? (
-              <div className="mt-8 rounded-2xl border border-white/10 bg-white/[.055] p-5">
+              <div className="mt-5 rounded-2xl border border-white/10 bg-white/[.055] p-4 sm:mt-8 sm:p-5">
                 <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
-                  <span className="text-5xl font-black tracking-[-.06em] text-[#ffd36f]">
+                  <span className="text-4xl font-black tracking-[-.06em] text-[#ffd36f] sm:text-5xl">
                     {data.rating.toLocaleString(language === 'ro' ? 'ro-RO' : 'en-GB', {
                       minimumFractionDigits: 1,
                       maximumFractionDigits: 1,
@@ -157,7 +157,7 @@ export function GoogleReviews({ language = 'ro' }: { language?: Language }) {
             ) : null}
 
             <a
-              className="group mt-7 inline-flex min-h-12 items-center gap-2 rounded-xl bg-[#f6a817] px-5 text-sm font-black text-[#071827] transition hover:bg-[#ffc451]"
+              className="group mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl border border-[#f6a817]/35 bg-[#f6a817]/10 px-4 text-sm font-black text-[#ffd36f] transition hover:bg-[#f6a817] hover:text-[#071827] sm:mt-7 sm:min-h-12 sm:bg-[#f6a817] sm:px-5 sm:text-[#071827]"
               href={sourceUrl}
               target="_blank"
               rel="noreferrer"
@@ -171,18 +171,18 @@ export function GoogleReviews({ language = 'ro' }: { language?: Language }) {
           </div>
         </div>
 
-        <div className="p-6 sm:p-8 lg:p-10">
+        <div className="p-5 sm:p-8 lg:p-10">
           {state === 'ready' && data ? (
             <>
               <div className="mb-5 flex items-center gap-2 text-xs font-black uppercase tracking-[.1em] text-[#607183]">
                 <BadgeCheck className="h-4 w-4 text-[#a46600]" aria-hidden="true" />
                 {t.supplied}
               </div>
-              <div className="grid gap-4 xl:grid-cols-3">
+              <div className="reviews-mobile-track flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 xl:grid xl:grid-cols-3 xl:overflow-visible xl:pb-0">
                 {data.reviews.slice(0, 3).map((review) => (
                   <article
                     key={review.sourceUrl}
-                    className="group rounded-2xl border border-[#e1e7ec] bg-[#f7f9fa] p-5 transition hover:-translate-y-1 hover:border-[#d1dbe3] hover:bg-white hover:shadow-[0_16px_38px_rgba(13,34,52,.07)]"
+                    className="group min-w-[84%] snap-start rounded-2xl border border-[#e1e7ec] bg-[#f7f9fa] p-5 transition hover:-translate-y-1 hover:border-[#d1dbe3] hover:bg-white hover:shadow-[0_16px_38px_rgba(13,34,52,.07)] sm:min-w-[62%] xl:min-w-0"
                   >
                     <div className="flex items-center gap-3">
                       {review.author.photoUrl ? (
@@ -241,14 +241,14 @@ export function GoogleReviews({ language = 'ro' }: { language?: Language }) {
                   </article>
                 ))}
               </div>
-              <p className="mt-5 text-xs leading-5 text-[#718294]">{t.footnote}</p>
+              <p className="mt-4 text-[11px] leading-5 text-[#718294] sm:mt-5 sm:text-xs">{t.footnote}</p>
             </>
           ) : state === 'loading' || state === 'idle' ? (
-            <div className="grid gap-4 xl:grid-cols-3" aria-live="polite">
+            <div className="reviews-mobile-track flex gap-4 overflow-x-hidden xl:grid xl:grid-cols-3" aria-live="polite">
               {[1, 2, 3].map((item) => (
                 <div
                   key={item}
-                  className="h-56 animate-pulse rounded-2xl bg-[#edf1f4]"
+                  className="h-52 min-w-[84%] animate-pulse rounded-2xl bg-[#edf1f4] sm:min-w-[62%] xl:min-w-0"
                 />
               ))}
             </div>
