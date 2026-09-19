@@ -16,10 +16,52 @@ type Metrics = {
   sources: { label: string; value: number }[];
 };
 
+type GoogleAdsPayload = {
+  connected: boolean;
+  days: number;
+  missingConfiguration: string[];
+  connectionError?: string;
+  requestId?: string | null;
+  edit: {
+    securityConfigured: boolean;
+    writeEnabled: boolean;
+    active: boolean;
+    expiresAt: string | null;
+  };
+  report: {
+    range: { start: string; end: string };
+    customer: string;
+    summary: {
+      impressions: number;
+      clicks: number;
+      ctr: number;
+      costRon: number;
+      averageCpcRon: number;
+      conversions: number;
+      costPerConversionRon: number;
+      phoneCalls: number;
+      phoneImpressions: number;
+    };
+    campaigns: {
+      id: string;
+      name: string;
+      status: string;
+      dailyBudgetRon: number;
+      budgetResourceName: string | null;
+      impressions: number;
+      clicks: number;
+      ctr: number;
+      costRon: number;
+      averageCpcRon: number;
+      conversions: number;
+      phoneCalls: number;
+      phoneImpressions: number;
+    }[];
+  } | null;
+};
+
 type DashboardUser = Pick<User, 'email' | 'roles'>;
 
-// This is a presentation-only switch for the temporary Netlify test site.
-// It never grants access to the real metrics endpoint.
 const demoDashboardEnabled = process.env.NEXT_PUBLIC_ADMIN_DEMO_ENABLED === 'true';
 const demoCredentials = { email: '1@1.com', password: '1234' };
 const demoMetrics: Metrics = {
@@ -110,11 +152,28 @@ function Breakdown({ title, values }: { title: string; values: { label: string; 
   );
 }
 
+function ron(value: number) {
+  return new Intl.NumberFormat('ro-RO', {
+    style: 'currency',
+    currency: 'RON',
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+function number(value: number, maximumFractionDigits = 0) {
+  return new Intl.NumberFormat('ro-RO', { maximumFractionDigits }).format(value);
+}
+
 export function AdminDashboard() {
   const [user, setUser] = useState<DashboardUser | null>(null);
   const [metrics, setMetrics] = useState<Metrics | null>(null);
+  const [ads, setAds] = useState<GoogleAdsPayload | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'unauthorized' | 'error'>('loading');
+  const [adsStatus, setAdsStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
   const [isDemoDashboard, setIsDemoDashboard] = useState(false);
+  const [pin, setPin] = useState('');
+  const [pinBusy, setPinBusy] = useState(false);
+  const [pinMessage, setPinMessage] = useState<string | null>(null);
 
   const loadMetrics = async () => {
     setStatus('loading');
@@ -131,13 +190,32 @@ export function AdminDashboard() {
     setStatus('ready');
   };
 
+  const loadAds = async () => {
+    setAdsStatus('loading');
+    const response = await fetch('/api/admin/google-ads?days=14', {
+      credentials: 'same-origin',
+      cache: 'no-store',
+    });
+    const payload = (await response.json().catch(() => null)) as GoogleAdsPayload | null;
+    if (payload) setAds(payload);
+    setAdsStatus(response.ok || response.status === 502 ? 'ready' : 'error');
+  };
+
+  const refreshAll = async () => {
+    if (isDemoDashboard) {
+      setMetrics(demoMetrics);
+      return;
+    }
+    await Promise.all([loadMetrics(), loadAds()]);
+  };
+
   useEffect(() => {
     void (async () => {
       try {
         await handleAuthCallback();
         const currentUser = await getUser();
         setUser(currentUser);
-        if (currentUser) await loadMetrics();
+        if (currentUser) await Promise.all([loadMetrics(), loadAds()]);
         else setStatus('unauthorized');
       } catch {
         setStatus('unauthorized');
@@ -154,6 +232,7 @@ export function AdminDashboard() {
       setUser({ email, roles: ['admin'] });
       setMetrics(demoMetrics);
       setStatus('ready');
+      setAdsStatus('idle');
       setIsDemoDashboard(true);
       return;
     }
@@ -166,7 +245,9 @@ export function AdminDashboard() {
     if (isDemoDashboard) {
       setUser(null);
       setMetrics(null);
+      setAds(null);
       setStatus('unauthorized');
+      setAdsStatus('idle');
       setIsDemoDashboard(false);
       return;
     }
@@ -175,7 +256,64 @@ export function AdminDashboard() {
     window.location.assign('/admin');
   };
 
+  const unlockAdsEdit = async (event: SyntheticEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setPinBusy(true);
+    setPinMessage(null);
+
+    try {
+      const response = await fetch('/api/admin/google-ads/unlock', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ pin }),
+      });
+      const payload = (await response.json().catch(() => ({}))) as {
+        ok?: boolean;
+        reason?: string;
+        attemptsRemaining?: number;
+        lockUntil?: string;
+      };
+
+      if (!response.ok || !payload.ok) {
+        if (payload.reason === 'locked') {
+          setPinMessage('Prea multe încercări. Edit Mode este blocat temporar 15 minute.');
+        } else if (payload.reason === 'not_configured') {
+          setPinMessage('Protecția PIN nu este încă configurată în variabilele securizate Netlify.');
+        } else {
+          setPinMessage(`PIN incorect. Încercări rămase: ${payload.attemptsRemaining ?? '—'}.`);
+        }
+        return;
+      }
+
+      setPin('');
+      setPinMessage('Edit Mode deblocat temporar.');
+      await loadAds();
+    } finally {
+      setPinBusy(false);
+    }
+  };
+
+  const lockAdsEdit = async () => {
+    setPinBusy(true);
+    setPinMessage(null);
+    try {
+      await fetch('/api/admin/google-ads/lock', {
+        method: 'POST',
+        credentials: 'same-origin',
+      });
+      setPinMessage('Edit Mode blocat.');
+      await loadAds();
+    } finally {
+      setPinBusy(false);
+    }
+  };
+
   if (!user || status === 'unauthorized') return <LoginPanel onLogin={handleLogin} />;
+
+  const googleSessions = metrics?.sources.find((source) =>
+    source.label.toLowerCase().includes('google'),
+  )?.value ?? 0;
 
   return (
     <div className="mt-8">
@@ -185,11 +323,11 @@ export function AdminDashboard() {
           <p className="mt-1 text-sm text-[#52657a]">
             {isDemoDashboard
               ? 'Demo de prezentare · date fictive, fără acces la metricile reale'
-              : 'Ultimele 14 zile · date agregate după acceptarea măsurării'}
+              : 'Ultimele 14 zile · site + Google Ads în același dashboard'}
           </p>
         </div>
         <div className="flex gap-2">
-          <button className="rounded-lg border border-[#cbd6e2] px-4 py-2.5 text-sm font-bold text-[#30465d]" type="button" onClick={() => (isDemoDashboard ? setMetrics(demoMetrics) : void loadMetrics())}>Actualizează</button>
+          <button className="rounded-lg border border-[#cbd6e2] px-4 py-2.5 text-sm font-bold text-[#30465d]" type="button" onClick={() => void refreshAll()}>Actualizează</button>
           <button className="rounded-lg bg-[#0c2035] px-4 py-2.5 text-sm font-bold text-white" type="button" onClick={() => void handleLogout()}>Ieși</button>
         </div>
       </div>
@@ -201,8 +339,9 @@ export function AdminDashboard() {
         </output>
       ) : null}
 
-      {status === 'loading' ? <p className="mt-6 text-sm font-semibold text-[#52657a]" aria-live="polite">Se încarcă datele…</p> : null}
+      {status === 'loading' ? <p className="mt-6 text-sm font-semibold text-[#52657a]" aria-live="polite">Se încarcă datele site-ului…</p> : null}
       {status === 'error' ? <p className="mt-6 rounded-xl bg-[#fff1ee] p-4 text-sm font-semibold text-[#9a3412]">Datele nu au putut fi încărcate. Verifică dacă Netlify Identity și Netlify Blobs sunt activate pentru acest proiect.</p> : null}
+
       {metrics ? (
         <>
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -225,6 +364,146 @@ export function AdminDashboard() {
           </div>
         </>
       ) : null}
+
+      <section className="mt-8 overflow-hidden rounded-[1.75rem] border border-[#cfd9e3] bg-white shadow-[0_18px_50px_rgba(13,34,52,.06)]">
+        <div className="flex flex-col justify-between gap-4 bg-[#081b2c] p-6 text-white sm:flex-row sm:items-center">
+          <div>
+            <p className="text-xs font-extrabold uppercase tracking-[.14em] text-[#f6b62e]">Google Ads</p>
+            <h2 className="mt-2 text-2xl font-extrabold tracking-[-.04em]">Campanie + conversii</h2>
+            <p className="mt-2 text-sm text-white/60">Citire implicită. Orice modificare cere autentificarea admin + PIN temporar.</p>
+          </div>
+          <span className={`w-fit rounded-full px-3 py-1.5 text-xs font-extrabold uppercase tracking-[.1em] ${
+            ads?.edit.active
+              ? 'bg-[#dff7e8] text-[#17623b]'
+              : 'bg-white/10 text-white/72'
+          }`}>
+            {ads?.edit.active ? 'Edit session' : 'Read only'}
+          </span>
+        </div>
+
+        <div className="grid gap-6 p-6 lg:grid-cols-[1.35fr_.65fr]">
+          <div>
+            {isDemoDashboard ? (
+              <p className="rounded-xl bg-[#f4f6f8] p-4 text-sm leading-6 text-[#607183]">Google Ads nu este accesat în modul demo.</p>
+            ) : adsStatus === 'loading' ? (
+              <p className="text-sm font-semibold text-[#52657a]">Se citesc datele Google Ads…</p>
+            ) : adsStatus === 'error' && !ads ? (
+              <p className="rounded-xl bg-[#fff1ee] p-4 text-sm font-semibold text-[#9a3412]">Endpointul Google Ads nu a putut fi încărcat.</p>
+            ) : ads && !ads.connected ? (
+              <div className="rounded-2xl border border-[#dce2e9] bg-[#f7f9fa] p-5">
+                <p className="font-extrabold text-[#1e344b]">Conector pregătit · încă neconectat</p>
+                <p className="mt-2 text-sm leading-6 text-[#607183]">
+                  {ads.connectionError
+                    ? ads.connectionError
+                    : 'Lipsesc credentialele Google Ads din variabilele securizate Netlify. Site-ul și dashboardul rămân funcționale.'}
+                </p>
+                {ads.requestId ? <p className="mt-2 text-xs text-[#718294]">Google request ID: {ads.requestId}</p> : null}
+              </div>
+            ) : ads?.report ? (
+              <>
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                  {[
+                    ['Cheltuit', ron(ads.report.summary.costRon)],
+                    ['Clickuri', number(ads.report.summary.clicks)],
+                    ['Afișări', number(ads.report.summary.impressions)],
+                    ['CTR', `${number(ads.report.summary.ctr, 2)}%`],
+                    ['Conversii', number(ads.report.summary.conversions, 1)],
+                    ['Apeluri Ads', number(ads.report.summary.phoneCalls)],
+                  ].map(([label, value]) => (
+                    <article key={label} className="rounded-xl border border-[#dce2e9] bg-[#f8fafb] p-4">
+                      <p className="text-xs font-bold uppercase tracking-[.08em] text-[#718294]">{label}</p>
+                      <p className="mt-2 text-2xl font-extrabold tracking-[-.04em] text-[#1e344b]">{value}</p>
+                    </article>
+                  ))}
+                </div>
+
+                <div className="mt-4 rounded-xl border border-[#ead8ae] bg-[#fff9eb] p-4">
+                  <p className="text-sm font-extrabold text-[#714b08]">Ads → site, ultimele 14 zile</p>
+                  <p className="mt-1 text-sm leading-6 text-[#7c6334]">
+                    {number(ads.report.summary.clicks)} clickuri Google Ads · {googleSessions} sesiuni măsurate cu sursă Google · {metrics?.summary.callClicks ?? 0} apăsări pe „Sună” pe site.
+                  </p>
+                </div>
+
+                <div className="mt-5 grid gap-3">
+                  {ads.report.campaigns.map((campaign) => (
+                    <article key={campaign.id} className="rounded-xl border border-[#dce2e9] p-4">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <p className="font-extrabold text-[#1e344b]">{campaign.name}</p>
+                          <p className="mt-1 text-xs text-[#718294]">ID {campaign.id} · buget {ron(campaign.dailyBudgetRon)}/zi</p>
+                        </div>
+                        <span className="rounded-full bg-[#eef2f5] px-2.5 py-1 text-[11px] font-extrabold text-[#52657a]">{campaign.status}</span>
+                      </div>
+                      <div className="mt-3 grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
+                        <span>Cost <strong>{ron(campaign.costRon)}</strong></span>
+                        <span>Click <strong>{number(campaign.clicks)}</strong></span>
+                        <span>Conv. <strong>{number(campaign.conversions, 1)}</strong></span>
+                        <span>Apeluri <strong>{number(campaign.phoneCalls)}</strong></span>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </>
+            ) : null}
+          </div>
+
+          <aside className="rounded-2xl border border-[#dce2e9] bg-[#f7f9fa] p-5">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-extrabold uppercase tracking-[.1em] text-[#718294]">Layer securizat</p>
+                <h3 className="mt-1 text-lg font-extrabold text-[#1e344b]">Modificări Google Ads</h3>
+              </div>
+              <span className="text-xl" aria-hidden="true">{ads?.edit.active ? '🔓' : '🔒'}</span>
+            </div>
+
+            {!ads?.edit.securityConfigured ? (
+              <p className="mt-4 rounded-xl border border-[#ead8ae] bg-[#fff9eb] p-3 text-sm leading-6 text-[#714b08]">
+                Protecția este implementată, dar PIN-ul și cheia de sesiune trebuie introduse ca variabile secrete Netlify.
+              </p>
+            ) : ads.edit.active ? (
+              <div className="mt-4">
+                <p className="rounded-xl border border-[#b9e5ca] bg-[#effbf4] p-3 text-sm font-semibold leading-6 text-[#17623b]">
+                  Edit Mode deblocat până la {ads.edit.expiresAt ? new Date(ads.edit.expiresAt).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' }) : 'expirarea sesiunii'}.
+                </p>
+                <button type="button" disabled={pinBusy} onClick={() => void lockAdsEdit()} className="mt-3 min-h-11 w-full rounded-lg border border-[#cbd6e2] bg-white px-4 text-sm font-extrabold text-[#30465d]">
+                  Blochează acum
+                </button>
+              </div>
+            ) : (
+              <form className="mt-4 grid gap-3" onSubmit={unlockAdsEdit}>
+                <label className="grid gap-1.5 text-sm font-bold text-[#30465d]">
+                  PIN 4 cifre
+                  <input
+                    type="password"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    maxLength={4}
+                    pattern="[0-9]{4}"
+                    required
+                    value={pin}
+                    onChange={(event) => setPin(event.target.value.replace(/\D/g, '').slice(0, 4))}
+                    className="min-h-12 rounded-lg border border-[#cbd6e2] bg-white px-4 text-center text-xl font-extrabold tracking-[.35em] outline-none focus:border-[#9f6504] focus:ring-2 focus:ring-[#f7a71b]/30"
+                  />
+                </label>
+                <button type="submit" disabled={pinBusy || pin.length !== 4} className="min-h-11 rounded-lg bg-[#0c2035] px-4 text-sm font-extrabold text-white disabled:opacity-50">
+                  {pinBusy ? 'Se verifică…' : 'Deblochează 15 minute'}
+                </button>
+              </form>
+            )}
+
+            {pinMessage ? <output className="mt-3 block text-xs font-semibold leading-5 text-[#52657a]">{pinMessage}</output> : null}
+
+            <div className="mt-5 border-t border-[#dce2e9] pt-4 text-xs leading-5 text-[#65788b]">
+              <p><strong>5 încercări</strong> înainte de blocare temporară.</p>
+              <p className="mt-1"><strong>15 minute</strong> durată maximă pentru sesiunea ridicată.</p>
+              <p className="mt-1">Operațiile sunt auditate fără stocarea PIN-ului.</p>
+              <p className="mt-1">
+                Write API: <strong>{ads?.edit.writeEnabled ? 'activat' : 'oprit global'}</strong>.
+              </p>
+            </div>
+          </aside>
+        </div>
+      </section>
     </div>
   );
 }
