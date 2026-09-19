@@ -1,9 +1,13 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import {
   ArrowRight,
   BadgeCheck,
   Clock3,
+  Languages,
   MapPin,
   MessageCircle,
   Navigation,
@@ -19,69 +23,294 @@ import {
 } from '@/components/conversion-links';
 import { GoogleReviews } from '@/components/google-reviews';
 
-const services = [
-  {
-    number: '01',
-    icon: Truck,
-    title: 'Tractări auto',
-    text: 'Preluare sigură pentru autoturisme care nu mai pot circula și transport către destinația stabilită.',
-  },
-  {
-    number: '02',
-    icon: Navigation,
-    title: 'Preluare de pe A2',
-    text: 'Intervenții pentru zona Fetești și principalele puncte de pe Autostrada Soarelui.',
-  },
-  {
-    number: '03',
-    icon: Wrench,
-    title: 'Asistență rutieră',
-    text: 'Descrii problema la telefon, iar noi stabilim rapid ce tip de intervenție este potrivit.',
-  },
-  {
-    number: '04',
-    icon: MapPin,
-    title: 'Transport auto',
-    text: 'Transport organizat către service, domiciliu sau altă destinație confirmată împreună.',
-  },
-];
+type Language = 'ro' | 'en';
 
-const coverage = [
-  'Fetești',
-  'A2 Autostrada Soarelui',
-  'Cernavodă',
-  'Hârșova',
-  'Medgidia',
-  'Constanța',
-  'Călărași',
-  'Slobozia',
-  'Brăila',
-];
+const languageStorageKey = 'taf-language-v1';
 
-const faqs = [
-  {
-    question: 'Ce trebuie să vă spun când sun?',
-    answer:
-      'Locația cât mai exactă, tipul mașinii, situația pe scurt și destinația dorită. Confirmăm înainte de plecare disponibilitatea, timpul estimat și costul.',
+const copy = {
+  ro: {
+    nav: {
+      services: 'Servicii',
+      coverage: 'Acoperire',
+      reviews: 'Recenzii',
+      contact: 'Contact',
+      call: 'Sună',
+    },
+    brandSubline: '24/7 · A2 · Ialomița',
+    availability: 'Disponibilitate non-stop',
+    verifiedReviews: 'Recenzii Google verificate',
+    heroLine1: 'Tractări auto',
+    heroLine2: 'Fetești & A2.',
+    heroLine3: 'Ajutor fără complicații.',
+    heroCopy:
+      'Ai rămas în pană sau mașina nu mai poate circula? Ne spui unde ești, ce vehicul ai și destinația. Confirmăm clar intervenția înainte de plecare.',
+    callNow: 'Sună acum',
+    whatsappLocation: 'WhatsApp + locație',
+    safePickup: 'Preluare în siguranță',
+    timeAndCost: 'Timp și cost confirmate telefonic',
+    quickIntervention: 'Intervenție rapidă',
+    tellUs3: 'Spune-ne 3 lucruri.',
+    heroSteps: [
+      ['01', 'Unde ești', 'Trimite locația sau reperul exact.'],
+      ['02', 'Ce mașină ai', 'Marcă, model și situația pe scurt.'],
+      ['03', 'Unde mergem', 'Service, domiciliu sau altă destinație.'],
+    ],
+    noInventedPrices:
+      'Nu afișăm timpi sau tarife inventate. Confirmăm situația concretă înainte de plecare.',
+    proof: [
+      ['24/7', 'Disponibilitate'],
+      ['A2', 'Zona Fetești'],
+      ['Direct', 'Confirmare la telefon'],
+    ],
+    servicesKicker: 'Servicii',
+    servicesTitle: 'Exact ce ai nevoie când mașina nu mai merge.',
+    servicesCopy:
+      'Fără meniuri complicate și fără formulare lungi. Ne dai informația esențială, stabilim ce poate fi făcut și confirmăm intervenția.',
+    confirmByPhone: 'Confirmăm telefonic',
+    services: [
+      {
+        number: '01',
+        icon: Truck,
+        title: 'Tractări auto',
+        text: 'Preluare sigură pentru autoturisme care nu mai pot circula și transport către destinația stabilită.',
+      },
+      {
+        number: '02',
+        icon: Navigation,
+        title: 'Preluare de pe A2',
+        text: 'Intervenții pentru zona Fetești și sectoarele apropiate de pe Autostrada Soarelui.',
+      },
+      {
+        number: '03',
+        icon: Wrench,
+        title: 'Asistență rutieră',
+        text: 'Descrii problema la telefon, iar noi stabilim rapid ce tip de intervenție este potrivit.',
+      },
+      {
+        number: '04',
+        icon: MapPin,
+        title: 'Transport auto',
+        text: 'Transport organizat către service, domiciliu sau altă destinație confirmată împreună.',
+      },
+    ],
+    howKicker: 'Cum procedăm',
+    howTitle: 'De la problemă la soluție, fără zgomot inutil.',
+    howCopy:
+      'Într-o situație de urgență, pagina trebuie să te ajute să iei o decizie rapidă. Restul îl clarificăm direct.',
+    howSteps: [
+      ['01', 'Ne contactezi', 'Suni sau trimiți un mesaj cu locația și situația mașinii.', Phone],
+      ['02', 'Confirmăm', 'Îți spunem disponibilitatea, timpul estimat și costul pentru cazul tău.', BadgeCheck],
+      ['03', 'Preluăm', 'Stabilim destinația și organizăm transportul în condiții de siguranță.', Truck],
+    ],
+    coverageKicker: 'Acoperire',
+    coverageTitle: 'Punct de plecare: Fetești.',
+    coverageCopy:
+      'Zona uzuală de intervenție este de aproximativ 40–50 km în jurul Feteștiului. Pentru distanțe mai mari, sună-ne și verificăm disponibilitatea înainte de plecare.',
+    checkAvailability: 'Verifică disponibilitatea',
+    interventionArea: 'Zona de intervenție',
+    coverage: [
+      'Fetești',
+      'A2 în zona Fetești',
+      '≈ 40–50 km în jur',
+      'Mai departe: confirmare telefonică',
+    ],
+    startingPoint: 'Punct de pornire',
+    openMaps: 'Deschide în Google Maps',
+    needHelp: 'Ai nevoie de ajutor acum?',
+    shortCall: 'Un apel scurt poate clarifica tot.',
+    contactCopy:
+      'Spune-ne locația, mașina și destinația. Îți confirmăm direct dacă putem prelua intervenția.',
+    faqKicker: 'Întrebări frecvente',
+    faqTitle: 'Informația esențială, înainte să suni.',
+    faqs: [
+      {
+        question: 'Ce trebuie să vă spun când sun?',
+        answer:
+          'Locația cât mai exactă, tipul mașinii, situația pe scurt și destinația dorită. Confirmăm înainte de plecare disponibilitatea, timpul estimat și costul.',
+      },
+      {
+        question: 'Pot trimite locația pe WhatsApp?',
+        answer:
+          'Da. Butonul WhatsApp cere acordul pentru locație doar când îl apeși. Dacă nu permiți accesul, poți continua conversația fără locație automată.',
+      },
+      {
+        question: 'Preluați mașini și de pe A2?',
+        answer:
+          'Da, în zona Fetești și în aria în care putem interveni în siguranță. Pentru poziția exactă, sună și confirmăm imediat disponibilitatea.',
+      },
+      {
+        question: 'Cât de departe vă deplasați?',
+        answer:
+          'În mod obișnuit intervenim la aproximativ 40–50 km în jurul Feteștiului. Pentru distanțe mai mari putem discuta cazul la telefon și confirma dacă îl putem prelua.',
+      },
+      {
+        question: 'Cum aflu costul?',
+        answer:
+          'Costul depinde de poziție, tipul vehiculului și destinație. Îl discutăm clar la telefon, înainte să plecăm către tine.',
+      },
+    ],
+    footerCopy:
+      'Tractare și asistență rutieră cu punct de plecare din Fetești, pentru A2 și aproximativ 40–50 km în jur. Distanțele mai mari se confirmă telefonic.',
+    navigation: 'Navigare',
+    contactLegal: 'Contact & legal',
+    privacy: 'Confidențialitate',
+    terms: 'Termeni',
+    rights: 'Toate drepturile rezervate.',
+    footerCoverage: 'Fetești · A2 · ~40–50 km · mai departe la telefon',
+    mobileCall: 'Sună acum',
   },
-  {
-    question: 'Pot trimite locația pe WhatsApp?',
-    answer:
-      'Da. Butonul WhatsApp cere acordul pentru locație doar când îl apeși. Dacă nu permiți accesul, poți continua conversația fără locație automată.',
+  en: {
+    nav: {
+      services: 'Services',
+      coverage: 'Coverage',
+      reviews: 'Reviews',
+      contact: 'Contact',
+      call: 'Call',
+    },
+    brandSubline: '24/7 · A2 · Ialomița',
+    availability: 'Available 24/7',
+    verifiedReviews: 'Verified Google reviews',
+    heroLine1: 'Vehicle recovery',
+    heroLine2: 'Fetești & A2.',
+    heroLine3: 'Straightforward roadside help.',
+    heroCopy:
+      'Broken down or unable to drive safely? Tell us where you are, what vehicle you have and where it needs to go. We confirm availability, timing and cost before departure.',
+    callNow: 'Call now',
+    whatsappLocation: 'WhatsApp + location',
+    safePickup: 'Safe vehicle recovery',
+    timeAndCost: 'Timing and cost confirmed by phone',
+    quickIntervention: 'Quick response',
+    tellUs3: 'Tell us 3 things.',
+    heroSteps: [
+      ['01', 'Where you are', 'Send your location or the nearest landmark.'],
+      ['02', 'What you drive', 'Make, model and a short description of the problem.'],
+      ['03', 'Where it goes', 'Garage, home or another agreed destination.'],
+    ],
+    noInventedPrices:
+      'We do not display made-up arrival times or prices. We confirm the real situation before departure.',
+    proof: [
+      ['24/7', 'Availability'],
+      ['A2', 'Fetești area'],
+      ['Direct', 'Phone confirmation'],
+    ],
+    servicesKicker: 'Services',
+    servicesTitle: 'The roadside help you need when the car stops.',
+    servicesCopy:
+      'No complicated menus and no long forms. Give us the essential details, we assess the situation and confirm the intervention.',
+    confirmByPhone: 'Confirmed by phone',
+    services: [
+      {
+        number: '01',
+        icon: Truck,
+        title: 'Vehicle recovery',
+        text: 'Safe recovery for vehicles that can no longer be driven and transport to the agreed destination.',
+      },
+      {
+        number: '02',
+        icon: Navigation,
+        title: 'A2 recovery',
+        text: 'Roadside recovery around Fetești and nearby sections of the A2 motorway.',
+      },
+      {
+        number: '03',
+        icon: Wrench,
+        title: 'Roadside assistance',
+        text: 'Describe the problem by phone and we will quickly determine the appropriate intervention.',
+      },
+      {
+        number: '04',
+        icon: MapPin,
+        title: 'Vehicle transport',
+        text: 'Transport to a garage, home address or another destination agreed with you.',
+      },
+    ],
+    howKicker: 'How it works',
+    howTitle: 'From problem to solution, without unnecessary friction.',
+    howCopy:
+      'In a roadside emergency, the page should help you act quickly. We clarify the rest directly by phone.',
+    howSteps: [
+      ['01', 'Contact us', 'Call or message us with your location and the vehicle situation.', Phone],
+      ['02', 'We confirm', 'We confirm availability, estimated timing and cost for your case.', BadgeCheck],
+      ['03', 'We recover', 'We agree the destination and organise safe vehicle transport.', Truck],
+    ],
+    coverageKicker: 'Coverage',
+    coverageTitle: 'Starting point: Fetești.',
+    coverageCopy:
+      'Our usual service area is approximately 40–50 km around Fetești. For longer distances, call us first and we will confirm whether we can take the job.',
+    checkAvailability: 'Check availability',
+    interventionArea: 'Service area',
+    coverage: [
+      'Fetești',
+      'A2 around Fetești',
+      '≈ 40–50 km radius',
+      'Further away: call first',
+    ],
+    startingPoint: 'Starting point',
+    openMaps: 'Open in Google Maps',
+    needHelp: 'Need help now?',
+    shortCall: 'A short call can clarify everything.',
+    contactCopy:
+      'Tell us your location, vehicle and destination. We will confirm directly whether we can take the job.',
+    faqKicker: 'Frequently asked questions',
+    faqTitle: 'The essential information before you call.',
+    faqs: [
+      {
+        question: 'What should I tell you when I call?',
+        answer:
+          'Your exact location, vehicle type, a short description of the situation and the desired destination. We confirm availability, estimated timing and cost before departure.',
+      },
+      {
+        question: 'Can I send my location on WhatsApp?',
+        answer:
+          'Yes. The WhatsApp button asks for location permission only when you choose it. If you do not allow access, you can still continue the conversation without automatic location sharing.',
+      },
+      {
+        question: 'Do you recover vehicles from the A2 motorway?',
+        answer:
+          'Yes, around Fetești and within the area where we can intervene safely. Call with your exact position and we will confirm availability.',
+      },
+      {
+        question: 'How far do you travel?',
+        answer:
+          'We normally cover approximately 40–50 km around Fetești. For longer distances, call us and we can confirm whether we can take the job.',
+      },
+      {
+        question: 'How do I get a price?',
+        answer:
+          'The cost depends on your location, vehicle and destination. We discuss it clearly by phone before leaving for your location.',
+      },
+    ],
+    footerCopy:
+      'Vehicle recovery and roadside assistance starting from Fetești, covering the A2 area and approximately 40–50 km around the city. Longer distances are confirmed by phone.',
+    navigation: 'Navigation',
+    contactLegal: 'Contact & legal',
+    privacy: 'Privacy',
+    terms: 'Terms',
+    rights: 'All rights reserved.',
+    footerCoverage: 'Fetești · A2 · ~40–50 km · further by phone',
+    mobileCall: 'Call now',
   },
-  {
-    question: 'Preluați mașini și de pe A2?',
-    answer:
-      'Da, pentru situațiile în care intervenția se poate face în siguranță și în limitele zonei de acoperire. Sună pentru confirmare rapidă.',
-  },
-  {
-    question: 'Cum aflu costul?',
-    answer:
-      'Costul depinde de poziție, tipul vehiculului și destinație. Îl discutăm clar la telefon, înainte să plecăm către tine.',
-  },
-];
+} as const;
 
 export default function Home() {
+  const [language, setLanguage] = useState<Language>('ro');
+  const t = copy[language];
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem(languageStorageKey);
+    if (saved === 'en' || saved === 'ro') {
+      setLanguage(saved);
+      document.documentElement.lang = saved;
+    }
+  }, []);
+
+  const switchLanguage = (next: Language) => {
+    setLanguage(next);
+    window.localStorage.setItem(languageStorageKey, next);
+    document.documentElement.lang = next;
+    window.dispatchEvent(new CustomEvent('taf-language-change', { detail: next }));
+  };
+
   return (
     <main className="overflow-x-clip bg-[#f4f6f8] text-[#102235]">
       <section
@@ -90,7 +319,11 @@ export default function Home() {
       >
         <Image
           src="/hero-tow-truck.png"
-          alt="Platformă de tractare care transportă în siguranță un autoturism pe autostradă"
+          alt={
+            language === 'ro'
+              ? 'Platformă de tractare care transportă în siguranță un autoturism pe autostradă'
+              : 'Vehicle recovery truck safely transporting a car on the motorway'
+          }
           fill
           priority
           sizes="100vw"
@@ -105,7 +338,7 @@ export default function Home() {
             <Link
               href="#sus"
               className="flex min-w-0 items-center gap-3"
-              aria-label="Tractări Auto Fetești - început"
+              aria-label="Tractări Auto Fetești"
             >
               <span className="brand-mark grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#f6a817] text-[13px] font-black tracking-[-.04em] text-[#071827]">
                 TA
@@ -115,26 +348,50 @@ export default function Home() {
                   Tractări Auto Fetești
                 </span>
                 <span className="mt-0.5 block text-[11px] font-semibold uppercase tracking-[.14em] text-white/55">
-                  24/7 · A2 · Ialomița
+                  {t.brandSubline}
                 </span>
               </span>
             </Link>
 
             <nav
               className="hidden items-center gap-7 text-sm font-bold text-white/72 lg:flex"
-              aria-label="Navigare principală"
+              aria-label={language === 'ro' ? 'Navigare principală' : 'Main navigation'}
             >
-              <a href="#servicii" className="transition hover:text-[#ffd36f]">Servicii</a>
-              <a href="#acoperire" className="transition hover:text-[#ffd36f]">Acoperire</a>
-              <a href="#recenzii" className="transition hover:text-[#ffd36f]">Recenzii</a>
-              <a href="#contact" className="transition hover:text-[#ffd36f]">Contact</a>
+              <a href="#servicii" className="transition hover:text-[#ffd36f]">{t.nav.services}</a>
+              <a href="#acoperire" className="transition hover:text-[#ffd36f]">{t.nav.coverage}</a>
+              <a href="#recenzii" className="transition hover:text-[#ffd36f]">{t.nav.reviews}</a>
+              <a href="#contact" className="transition hover:text-[#ffd36f]">{t.nav.contact}</a>
             </nav>
 
-            <PhoneLink className="group inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-3.5 text-sm font-black text-[#071827] transition hover:-translate-y-0.5 hover:bg-[#ffd36f] sm:px-4">
-              <Phone className="h-4 w-4" aria-hidden="true" />
-              <span className="hidden sm:inline">Sună</span>
-              <span className="hidden md:inline">{phoneNumber}</span>
-            </PhoneLink>
+            <div className="flex items-center gap-2">
+              <div
+                className="inline-flex items-center rounded-xl border border-white/12 bg-white/[.06] p-1"
+                aria-label={language === 'ro' ? 'Selectează limba' : 'Select language'}
+              >
+                <Languages className="ml-1 hidden h-4 w-4 text-white/55 sm:block" aria-hidden="true" />
+                {(['ro', 'en'] as const).map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => switchLanguage(item)}
+                    aria-pressed={language === item}
+                    className={`min-h-9 rounded-lg px-2.5 text-[11px] font-black uppercase tracking-[.08em] transition ${
+                      language === item
+                        ? 'bg-[#f6a817] text-[#071827]'
+                        : 'text-white/62 hover:text-white'
+                    }`}
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
+
+              <PhoneLink className="group inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-3.5 text-sm font-black text-[#071827] transition hover:-translate-y-0.5 hover:bg-[#ffd36f] sm:px-4">
+                <Phone className="h-4 w-4" aria-hidden="true" />
+                <span className="hidden sm:inline">{t.nav.call}</span>
+                <span className="hidden md:inline">{phoneNumber}</span>
+              </PhoneLink>
+            </div>
           </div>
         </header>
 
@@ -143,77 +400,71 @@ export default function Home() {
             <div className="mb-6 flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-2 rounded-full border border-[#f6a817]/35 bg-[#f6a817]/12 px-3 py-1.5 text-xs font-black uppercase tracking-[.12em] text-[#ffd36f]">
                 <span className="status-pulse h-2 w-2 rounded-full bg-[#f6a817]" />
-                Disponibilitate non-stop
+                {t.availability}
               </span>
               <a
                 href="#recenzii"
                 className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/8 px-3 py-1.5 text-xs font-bold text-white/78 transition hover:border-white/30 hover:text-white"
               >
                 <BadgeCheck className="h-3.5 w-3.5 text-[#ffd36f]" aria-hidden="true" />
-                Recenzii Google verificate
+                {t.verifiedReviews}
               </a>
             </div>
 
             <h1 className="max-w-3xl text-[2.8rem] font-black leading-[.96] tracking-[-.058em] text-balance sm:text-6xl lg:text-[5.35rem]">
-              Tractări auto
-              <span className="block text-[#f6a817]">Fetești & A2.</span>
-              Ajutor fără complicații.
+              {t.heroLine1}
+              <span className="block text-[#f6a817]">{t.heroLine2}</span>
+              {t.heroLine3}
             </h1>
 
             <p className="mt-7 max-w-2xl text-base font-medium leading-7 text-white/72 sm:text-lg sm:leading-8">
-              Ai rămas în pană sau mașina nu mai poate circula? Ne spui unde ești,
-              ce vehicul ai și destinația. Confirmăm clar intervenția înainte de
-              plecare.
+              {t.heroCopy}
             </p>
 
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <PhoneLink className="cta-primary group inline-flex min-h-16 items-center justify-center gap-3 rounded-2xl bg-[#f6a817] px-6 text-base font-black text-[#071827] shadow-[0_18px_55px_rgba(246,168,23,.22)] transition hover:-translate-y-0.5 hover:bg-[#ffc451]">
                 <Phone className="h-5 w-5" aria-hidden="true" />
-                Sună acum · {phoneNumber}
+                {t.callNow} · {phoneNumber}
                 <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" aria-hidden="true" />
               </PhoneLink>
 
               <WhatsAppLocationButton className="inline-flex min-h-16 items-center justify-center gap-3 rounded-2xl border border-white/24 bg-white/8 px-6 text-base font-black text-white backdrop-blur-md transition hover:-translate-y-0.5 hover:border-white/45 hover:bg-white/13">
                 <MessageCircle className="h-5 w-5" aria-hidden="true" />
-                WhatsApp + locație
+                {t.whatsappLocation}
               </WhatsAppLocationButton>
             </div>
 
             <div className="mt-7 flex flex-wrap gap-x-7 gap-y-3 text-sm font-semibold text-white/60">
               <span className="inline-flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-[#ffd36f]" aria-hidden="true" />
-                Preluare în siguranță
+                {t.safePickup}
               </span>
               <span className="inline-flex items-center gap-2">
                 <Clock3 className="h-4 w-4 text-[#ffd36f]" aria-hidden="true" />
-                Timp și cost confirmate telefonic
+                {t.timeAndCost}
               </span>
             </div>
           </div>
 
           <aside className="hero-panel hidden rounded-[2rem] border border-white/13 bg-[#071827]/72 p-5 shadow-[0_28px_80px_rgba(0,0,0,.28)] backdrop-blur-xl lg:block">
             <div className="rounded-[1.55rem] border border-white/10 bg-white/[.055] p-6">
-              <p className="text-xs font-black uppercase tracking-[.14em] text-[#ffd36f]">Intervenție rapidă</p>
-              <h2 className="mt-3 text-2xl font-black tracking-[-.04em]">Spune-ne 3 lucruri.</h2>
+              <p className="text-xs font-black uppercase tracking-[.14em] text-[#ffd36f]">{t.quickIntervention}</p>
+              <h2 className="mt-3 text-2xl font-black tracking-[-.04em]">{t.tellUs3}</h2>
               <div className="mt-6 grid gap-3">
-                {[
-                  ['01', 'Unde ești', 'Trimite locația sau reperul exact.'],
-                  ['02', 'Ce mașină ai', 'Marcă, model și situația pe scurt.'],
-                  ['03', 'Unde mergem', 'Service, domiciliu sau altă destinație.'],
-                ].map(([number, title, copy]) => (
+                {t.heroSteps.map(([number, title, stepCopy]) => (
                   <div key={number} className="group flex gap-4 rounded-2xl border border-white/8 bg-black/10 p-4 transition hover:border-[#f6a817]/35 hover:bg-[#f6a817]/7">
                     <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-[#f6a817] text-xs font-black text-[#071827]">
                       {number}
                     </span>
                     <div>
                       <p className="text-sm font-black">{title}</p>
-                      <p className="mt-1 text-xs leading-5 text-white/52">{copy}</p>
+                      <p className="mt-1 text-xs leading-5 text-white/52">{stepCopy}</p>
                     </div>
                   </div>
                 ))}
               </div>
               <p className="mt-5 border-t border-white/10 pt-5 text-xs leading-5 text-white/48">
-                Nu afișăm timpi sau tarife inventate. Confirmăm situația concretă înainte de plecare.
+                {t.noInventedPrices}
               </p>
             </div>
           </aside>
@@ -222,11 +473,7 @@ export default function Home() {
         <div className="absolute inset-x-0 bottom-0 z-10">
           <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
             <div className="grid overflow-hidden rounded-t-3xl border-x border-t border-white/10 bg-[#0b2235]/94 shadow-2xl backdrop-blur-xl sm:grid-cols-3">
-              {[
-                ['24/7', 'Disponibilitate'],
-                ['A2', 'Autostrada Soarelui'],
-                ['Direct', 'Confirmare la telefon'],
-              ].map(([strong, label]) => (
+              {t.proof.map(([strong, label]) => (
                 <div key={label} className="flex items-center gap-3 border-b border-white/8 px-5 py-4 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
                   <span className="text-xl font-black tracking-[-.04em] text-[#ffd36f]">{strong}</span>
                   <span className="text-xs font-bold uppercase tracking-[.09em] text-white/53">{label}</span>
@@ -241,19 +488,14 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
           <div className="grid gap-8 lg:grid-cols-[.82fr_1.18fr] lg:items-end">
             <div>
-              <p className="section-kicker">Servicii</p>
-              <h2 className="section-title max-w-xl">
-                Exact ce ai nevoie când mașina nu mai merge.
-              </h2>
+              <p className="section-kicker">{t.servicesKicker}</p>
+              <h2 className="section-title max-w-xl">{t.servicesTitle}</h2>
             </div>
-            <p className="section-copy lg:ml-auto lg:max-w-xl">
-              Fără meniuri complicate și fără formulare lungi. Ne dai informația
-              esențială, stabilim ce poate fi făcut și confirmăm intervenția.
-            </p>
+            <p className="section-copy lg:ml-auto lg:max-w-xl">{t.servicesCopy}</p>
           </div>
 
           <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {services.map((service) => {
+            {t.services.map((service) => {
               const Icon = service.icon;
               return (
                 <article
@@ -269,7 +511,7 @@ export default function Home() {
                   <h3 className="mt-8 text-xl font-black tracking-[-.035em]">{service.title}</h3>
                   <p className="mt-3 text-sm leading-6 text-[#607183]">{service.text}</p>
                   <span className="mt-7 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-[.1em] text-[#a46600]">
-                    Confirmăm telefonic
+                    {t.confirmByPhone}
                     <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-1" aria-hidden="true" />
                   </span>
                 </article>
@@ -283,22 +525,15 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
           <div className="grid gap-12 lg:grid-cols-[.85fr_1.15fr] lg:items-start">
             <div className="lg:sticky lg:top-10">
-              <p className="section-kicker text-[#ffd36f]">Cum procedăm</p>
+              <p className="section-kicker text-[#ffd36f]">{t.howKicker}</p>
               <h2 className="mt-4 max-w-xl text-4xl font-black leading-[1.02] tracking-[-.05em] sm:text-5xl">
-                De la problemă la soluție, fără zgomot inutil.
+                {t.howTitle}
               </h2>
-              <p className="mt-5 max-w-lg text-base leading-7 text-white/60">
-                Într-o situație de urgență, pagina trebuie să te ajute să iei o
-                decizie rapidă. Restul îl clarificăm direct.
-              </p>
+              <p className="mt-5 max-w-lg text-base leading-7 text-white/60">{t.howCopy}</p>
             </div>
 
             <div className="route-flow">
-              {[
-                ['01', 'Ne contactezi', 'Suni sau trimiți un mesaj cu locația și situația mașinii.', Phone],
-                ['02', 'Confirmăm', 'Îți spunem disponibilitatea, timpul estimat și costul pentru cazul tău.', BadgeCheck],
-                ['03', 'Preluăm', 'Stabilim destinația și organizăm transportul în condiții de siguranță.', Truck],
-              ].map(([number, title, text, Icon], index) => {
+              {t.howSteps.map(([number, title, stepText, Icon], index) => {
                 const StepIcon = Icon as typeof Phone;
                 return (
                   <article key={number as string} className="relative grid gap-5 border-t border-white/10 py-7 sm:grid-cols-[72px_1fr] sm:gap-7">
@@ -310,7 +545,7 @@ export default function Home() {
                     </div>
                     <div>
                       <h3 className="text-2xl font-black tracking-[-.035em]">{title as string}</h3>
-                      <p className="mt-2 max-w-xl text-sm leading-6 text-white/58">{text as string}</p>
+                      <p className="mt-2 max-w-xl text-sm leading-6 text-white/58">{stepText as string}</p>
                     </div>
                     {index < 2 ? <span className="route-node" aria-hidden="true" /> : null}
                   </article>
@@ -326,17 +561,16 @@ export default function Home() {
           <div className="coverage-shell overflow-hidden rounded-[2rem] border border-[#d6dfe7] bg-white shadow-[0_24px_65px_rgba(13,34,52,.06)]">
             <div className="grid lg:grid-cols-[.88fr_1.12fr]">
               <div className="p-7 sm:p-10 lg:p-12">
-                <p className="section-kicker">Acoperire</p>
+                <p className="section-kicker">{t.coverageKicker}</p>
                 <h2 className="mt-4 text-4xl font-black leading-[1.03] tracking-[-.05em] sm:text-5xl">
-                  Fetești este punctul nostru de plecare.
+                  {t.coverageTitle}
                 </h2>
                 <p className="mt-5 max-w-xl text-base leading-7 text-[#607183]">
-                  Pentru A2 și localitățile din jur, disponibilitatea reală se
-                  confirmă la telefon în funcție de poziția și situația ta.
+                  {t.coverageCopy}
                 </p>
                 <PhoneLink className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-xl bg-[#0b2235] px-5 text-sm font-black text-white transition hover:bg-[#173c5c]">
                   <Phone className="h-4 w-4" aria-hidden="true" />
-                  Verifică disponibilitatea
+                  {t.checkAvailability}
                 </PhoneLink>
               </div>
 
@@ -349,10 +583,10 @@ export default function Home() {
                 <div className="relative z-10">
                   <div className="flex items-center gap-3 text-xs font-black uppercase tracking-[.12em] text-[#ffd36f]">
                     <Navigation className="h-4 w-4" aria-hidden="true" />
-                    Zona de intervenție
+                    {t.interventionArea}
                   </div>
                   <div className="mt-7 flex flex-wrap gap-2.5">
-                    {coverage.map((place, index) => (
+                    {t.coverage.map((place, index) => (
                       <span
                         key={place}
                         className={`rounded-full border px-4 py-2.5 text-sm font-bold backdrop-blur-sm ${
@@ -366,7 +600,7 @@ export default function Home() {
                     ))}
                   </div>
                   <div className="mt-10 rounded-2xl border border-white/10 bg-black/15 p-5">
-                    <p className="text-xs font-black uppercase tracking-[.12em] text-white/48">Punct de pornire</p>
+                    <p className="text-xs font-black uppercase tracking-[.12em] text-white/48">{t.startingPoint}</p>
                     <p className="mt-2 text-xl font-black">Strada Călărași nr. 1, Fetești</p>
                     <a
                       href="https://www.google.com/maps/place/Tractari+Auto/@44.3732589,27.8391185,17z/data=!4m8!3m7!1s0x40b071ea7db3ce0b:0xbe0630d2e820814a!8m2!3d44.3732589!4d27.8391185!9m1!1b1!16s%2Fg%2F11xn6j9csd"
@@ -374,7 +608,7 @@ export default function Home() {
                       rel="noreferrer"
                       className="mt-4 inline-flex items-center gap-2 text-sm font-black text-[#ffd36f] hover:text-white"
                     >
-                      Deschide în Google Maps
+                      {t.openMaps}
                       <ArrowRight className="h-4 w-4" aria-hidden="true" />
                     </a>
                   </div>
@@ -387,7 +621,7 @@ export default function Home() {
 
       <section id="recenzii" className="scroll-mt-24 border-y border-[#dce3e9] bg-[#eaf0f4] py-20 sm:py-24 lg:py-28">
         <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
-          <GoogleReviews />
+          <GoogleReviews language={language} />
         </div>
       </section>
 
@@ -397,12 +631,12 @@ export default function Home() {
             <div className="contact-glow absolute -right-28 -top-28 h-80 w-80 rounded-full bg-[#f6a817]/18 blur-3xl" aria-hidden="true" />
             <div className="relative z-10 grid gap-10 lg:grid-cols-[1fr_.75fr] lg:items-end">
               <div>
-                <p className="section-kicker text-[#ffd36f]">Ai nevoie de ajutor acum?</p>
+                <p className="section-kicker text-[#ffd36f]">{t.needHelp}</p>
                 <h2 className="mt-4 max-w-3xl text-4xl font-black leading-[.98] tracking-[-.055em] sm:text-6xl">
-                  Un apel scurt poate clarifica tot.
+                  {t.shortCall}
                 </h2>
                 <p className="mt-6 max-w-xl text-base leading-7 text-white/62">
-                  Spune-ne locația, mașina și destinația. Îți confirmăm direct dacă putem prelua intervenția.
+                  {t.contactCopy}
                 </p>
               </div>
 
@@ -417,7 +651,7 @@ export default function Home() {
                 <WhatsAppLocationButton className="inline-flex min-h-16 items-center justify-between gap-4 rounded-2xl border border-white/15 bg-white/[.06] px-5 text-left text-base font-black text-white transition hover:bg-white/[.1]">
                   <span className="inline-flex items-center gap-3">
                     <MessageCircle className="h-5 w-5 text-[#ffd36f]" aria-hidden="true" />
-                    WhatsApp + locație
+                    {t.whatsappLocation}
                   </span>
                   <ArrowRight className="h-5 w-5" aria-hidden="true" />
                 </WhatsAppLocationButton>
@@ -429,14 +663,12 @@ export default function Home() {
 
       <section id="intrebari" className="mx-auto max-w-5xl scroll-mt-24 px-5 py-20 sm:px-8 sm:py-24 lg:py-28">
         <div className="text-center">
-          <p className="section-kicker">Întrebări frecvente</p>
-          <h2 className="section-title mx-auto max-w-2xl">
-            Informația esențială, înainte să suni.
-          </h2>
+          <p className="section-kicker">{t.faqKicker}</p>
+          <h2 className="section-title mx-auto max-w-2xl">{t.faqTitle}</h2>
         </div>
 
         <div className="mt-10 divide-y divide-[#dce2e9] overflow-hidden rounded-[1.6rem] border border-[#dce2e9] bg-white shadow-[0_16px_45px_rgba(13,34,52,.05)]">
-          {faqs.map((faq) => (
+          {t.faqs.map((faq) => (
             <details key={faq.question} className="faq-row group px-6 py-5 sm:px-8">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-6 text-left text-base font-black text-[#1e344b]">
                 {faq.question}
@@ -457,42 +689,40 @@ export default function Home() {
               <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#f6a817] text-xs font-black text-[#071827]">TA</span>
               <p className="text-lg font-black text-white">Tractări Auto Fetești</p>
             </div>
-            <p className="mt-4 max-w-sm text-sm leading-6">
-              Tractare și asistență rutieră pentru Fetești, A2 și localitățile din zona de acoperire confirmată telefonic.
-            </p>
+            <p className="mt-4 max-w-sm text-sm leading-6">{t.footerCopy}</p>
           </div>
 
           <div>
-            <p className="text-sm font-black text-white">Navigare</p>
+            <p className="text-sm font-black text-white">{t.navigation}</p>
             <div className="mt-4 grid gap-2.5 text-sm">
-              <a href="#servicii" className="hover:text-[#ffd36f]">Servicii</a>
-              <a href="#acoperire" className="hover:text-[#ffd36f]">Acoperire</a>
-              <a href="#recenzii" className="hover:text-[#ffd36f]">Recenzii</a>
-              <a href="#contact" className="hover:text-[#ffd36f]">Contact</a>
+              <a href="#servicii" className="hover:text-[#ffd36f]">{t.nav.services}</a>
+              <a href="#acoperire" className="hover:text-[#ffd36f]">{t.nav.coverage}</a>
+              <a href="#recenzii" className="hover:text-[#ffd36f]">{t.nav.reviews}</a>
+              <a href="#contact" className="hover:text-[#ffd36f]">{t.nav.contact}</a>
             </div>
           </div>
 
           <div>
-            <p className="text-sm font-black text-white">Contact & legal</p>
+            <p className="text-sm font-black text-white">{t.contactLegal}</p>
             <div className="mt-4 grid gap-2.5 text-sm">
               <PhoneLink className="font-bold text-[#ffd36f] hover:text-white">{phoneNumber}</PhoneLink>
               <a href="mailto:tractariautofetesti24@gmail.com" className="hover:text-[#ffd36f]">Email</a>
-              <Link href="/confidentialitate" className="hover:text-[#ffd36f]">Confidențialitate</Link>
-              <Link href="/termeni" className="hover:text-[#ffd36f]">Termeni</Link>
+              <Link href="/confidentialitate" className="hover:text-[#ffd36f]">{t.privacy}</Link>
+              <Link href="/termeni" className="hover:text-[#ffd36f]">{t.terms}</Link>
             </div>
           </div>
         </div>
 
         <div className="mx-auto mt-10 flex max-w-7xl flex-col gap-2 border-t border-white/10 px-5 pt-5 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-10">
-          <span>© {new Date().getFullYear()} Tractări Auto Fetești. Toate drepturile rezervate.</span>
-          <span>Fetești · A2 · disponibilitate confirmată telefonic</span>
+          <span>© {new Date().getFullYear()} Tractări Auto Fetești. {t.rights}</span>
+          <span>{t.footerCoverage}</span>
         </div>
       </footer>
 
       <div className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-[1.15fr_.85fr] gap-2 border-t border-white/8 bg-[#061522]/95 p-2.5 shadow-[0_-12px_38px_rgba(7,24,39,.28)] backdrop-blur-xl sm:hidden">
         <PhoneLink className="inline-flex min-h-13 items-center justify-center gap-2 rounded-xl bg-[#f6a817] px-3 text-sm font-black text-[#071827]">
           <Phone className="h-4 w-4" aria-hidden="true" />
-          Sună acum
+          {t.mobileCall}
         </PhoneLink>
         <WhatsAppLocationButton className="inline-flex min-h-13 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[.08] px-3 text-sm font-black text-white">
           <MessageCircle className="h-4 w-4" aria-hidden="true" />
