@@ -195,10 +195,10 @@ export function AdminDashboard() {
       </div>
 
       {isDemoDashboard ? (
-        <div className="mt-5 rounded-2xl border border-[#f3c76b] bg-[#fff7e7] p-4 text-[#714b08]" role="status">
+        <output className="mt-5 block rounded-2xl border border-[#f3c76b] bg-[#fff7e7] p-4 text-[#714b08]">
           <p className="text-sm font-extrabold">DEMO DE PREZENTARE</p>
           <p className="mt-1 text-sm leading-6">Valorile de mai jos sunt exemple pentru client. Nu sunt date despre vizitatori și nu pot fi folosite pentru raportarea Google Ads.</p>
-        </div>
+        </output>
       ) : null}
 
       {status === 'loading' ? <p className="mt-6 text-sm font-semibold text-[#52657a]" aria-live="polite">Se încarcă datele…</p> : null}
