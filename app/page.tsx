@@ -774,23 +774,18 @@ export default function Home() {
         </div>
       </footer>
 
-      <div
-        aria-hidden={!showMobileActions}
-        className={`fixed inset-x-0 bottom-0 z-40 grid grid-cols-[1.15fr_.85fr] gap-2 border-t border-white/8 bg-[#061522]/95 p-2.5 shadow-[0_-12px_38px_rgba(7,24,39,.28)] backdrop-blur-xl transition duration-300 sm:hidden ${
-          showMobileActions
-            ? 'translate-y-0 opacity-100'
-            : 'pointer-events-none translate-y-full opacity-0'
-        }`}
-      >
-        <PhoneLink className="inline-flex min-h-13 items-center justify-center gap-2 rounded-xl bg-[#f6a817] px-3 text-sm font-black text-[#071827]">
-          <Phone className="h-4 w-4" aria-hidden="true" />
-          {t.mobileCall}
-        </PhoneLink>
-        <WhatsAppLocationButton className="inline-flex min-h-13 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[.08] px-3 text-sm font-black text-white">
-          <MessageCircle className="h-4 w-4" aria-hidden="true" />
-          WhatsApp
-        </WhatsAppLocationButton>
-      </div>
+      {showMobileActions ? (
+        <div className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-[1.15fr_.85fr] gap-2 border-t border-white/8 bg-[#061522]/95 p-2.5 shadow-[0_-12px_38px_rgba(7,24,39,.28)] backdrop-blur-xl sm:hidden">
+          <PhoneLink className="inline-flex min-h-13 items-center justify-center gap-2 rounded-xl bg-[#f6a817] px-3 text-sm font-black text-[#071827]">
+            <Phone className="h-4 w-4" aria-hidden="true" />
+            {t.mobileCall}
+          </PhoneLink>
+          <WhatsAppLocationButton className="inline-flex min-h-13 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[.08] px-3 text-sm font-black text-white">
+            <MessageCircle className="h-4 w-4" aria-hidden="true" />
+            WhatsApp
+          </WhatsAppLocationButton>
+        </div>
+      ) : null}
     </main>
   );
 }
