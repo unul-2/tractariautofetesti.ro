@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { ArrowRight, BadgeCheck, Star } from 'lucide-react';
 
+type Language = 'ro' | 'en';
+
 type Review = {
   author: {
     name: string;
@@ -23,15 +25,48 @@ type GoogleReviewsPayload = {
   reviews: Review[];
 };
 
+const copy = {
+  ro: {
+    ariaStars: (rating: number) => `${rating.toFixed(1)} din 5 stele`,
+    kicker: 'Recenzii Google',
+    title: 'Încrederea se verifică.',
+    intro:
+      'Ratingul și opiniile sunt solicitate din Google Maps. Păstrăm autorul, sursa și accesul către profilul original.',
+    reviewCount: 'recenzii Google',
+    profile: 'Vezi profilul Google',
+    supplied: 'Opinii furnizate de Google Maps',
+    source: 'Sursa',
+    footnote:
+      'Recenziile sunt afișate în ordinea de relevanță furnizată de Google. Pentru lista completă, folosește profilul Google Maps.',
+    unavailable:
+      'Recenziile live se afișează când conexiunea Google Maps este disponibilă. Profilul oficial rămâne accesibil prin butonul din stânga.',
+  },
+  en: {
+    ariaStars: (rating: number) => `${rating.toFixed(1)} out of 5 stars`,
+    kicker: 'Google reviews',
+    title: 'Trust should be verifiable.',
+    intro:
+      'Ratings and reviews are requested from Google Maps. We keep the author, source and direct access to the original profile.',
+    reviewCount: 'Google reviews',
+    profile: 'View Google profile',
+    supplied: 'Reviews provided by Google Maps',
+    source: 'Source',
+    footnote:
+      'Reviews are shown in the relevance order provided by Google. Use the Google Maps profile for the complete list.',
+    unavailable:
+      'Live reviews appear when the Google Maps connection is available. The official profile remains accessible from the button on the left.',
+  },
+} as const;
+
 const fallbackGoogleMapsUrl =
   'https://www.google.com/maps/place/Tractari+Auto/@44.3732589,27.8391185,17z/data=!4m8!3m7!1s0x40b071ea7db3ce0b:0xbe0630d2e820814a!8m2!3d44.3732589!4d27.8391185!9m1!1b1!16s%2Fg%2F11xn6j9csd';
 
-function Stars({ rating }: { rating: number }) {
+function Stars({ rating, language }: { rating: number; language: Language }) {
   const rounded = Math.max(0, Math.min(5, Math.round(rating)));
 
   return (
     <span
-      aria-label={`${rating.toFixed(1)} din 5 stele`}
+      aria-label={copy[language].ariaStars(rating)}
       className="inline-flex gap-0.5 text-[#d98c08]"
     >
       {Array.from({ length: 5 }, (_, index) => (
@@ -45,10 +80,11 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
-export function GoogleReviews() {
+export function GoogleReviews({ language = 'ro' }: { language?: Language }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [data, setData] = useState<GoogleReviewsPayload | null>(null);
   const [state, setState] = useState<'idle' | 'loading' | 'ready' | 'unavailable'>('idle');
+  const t = copy[language];
 
   useEffect(() => {
     const element = containerRef.current;
@@ -95,28 +131,25 @@ export function GoogleReviews() {
             aria-hidden="true"
           />
           <div className="relative z-10">
-            <p className="section-kicker text-[#ffd36f]">Recenzii Google</p>
+            <p className="section-kicker text-[#ffd36f]">{t.kicker}</p>
             <h2 className="mt-4 text-4xl font-black leading-[1.02] tracking-[-.05em] sm:text-5xl">
-              Încrederea se verifică.
+              {t.title}
             </h2>
-            <p className="mt-5 max-w-lg text-sm leading-6 text-white/60">
-              Ratingul și opiniile sunt solicitate din Google Maps. Păstrăm
-              autorul, sursa și accesul către profilul original.
-            </p>
+            <p className="mt-5 max-w-lg text-sm leading-6 text-white/60">{t.intro}</p>
 
             {state === 'ready' && data ? (
               <div className="mt-8 rounded-2xl border border-white/10 bg-white/[.055] p-5">
                 <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
                   <span className="text-5xl font-black tracking-[-.06em] text-[#ffd36f]">
-                    {data.rating.toLocaleString('ro-RO', {
+                    {data.rating.toLocaleString(language === 'ro' ? 'ro-RO' : 'en-GB', {
                       minimumFractionDigits: 1,
                       maximumFractionDigits: 1,
                     })}
                   </span>
                   <div className="pb-1">
-                    <Stars rating={data.rating} />
+                    <Stars rating={data.rating} language={language} />
                     <p className="mt-1 text-xs font-bold text-white/48">
-                      {data.reviewCount} recenzii Google
+                      {data.reviewCount} {t.reviewCount}
                     </p>
                   </div>
                 </div>
@@ -129,7 +162,7 @@ export function GoogleReviews() {
               target="_blank"
               rel="noreferrer"
             >
-              Vezi profilul Google
+              {t.profile}
               <ArrowRight
                 className="h-4 w-4 transition group-hover:translate-x-1"
                 aria-hidden="true"
@@ -143,7 +176,7 @@ export function GoogleReviews() {
             <>
               <div className="mb-5 flex items-center gap-2 text-xs font-black uppercase tracking-[.1em] text-[#607183]">
                 <BadgeCheck className="h-4 w-4 text-[#a46600]" aria-hidden="true" />
-                Opinii furnizate de Google Maps
+                {t.supplied}
               </div>
               <div className="grid gap-4 xl:grid-cols-3">
                 {data.reviews.slice(0, 3).map((review) => (
@@ -186,21 +219,19 @@ export function GoogleReviews() {
                             {review.author.name}
                           </p>
                         )}
-                        <p className="mt-0.5 text-xs text-[#718294]">
-                          {review.published}
-                        </p>
+                        <p className="mt-0.5 text-xs text-[#718294]">{review.published}</p>
                       </div>
                     </div>
 
                     <div className="mt-4 flex items-center justify-between gap-3">
-                      <Stars rating={review.rating} />
+                      <Stars rating={review.rating} language={language} />
                       <a
                         className="text-xs font-black text-[#9a6205] underline underline-offset-4"
                         href={review.sourceUrl}
                         target="_blank"
                         rel="noreferrer"
                       >
-                        Sursa
+                        {t.source}
                       </a>
                     </div>
 
@@ -210,10 +241,7 @@ export function GoogleReviews() {
                   </article>
                 ))}
               </div>
-              <p className="mt-5 text-xs leading-5 text-[#718294]">
-                Recenziile sunt afișate în ordinea de relevanță furnizată de
-                Google. Pentru lista completă, folosește profilul Google Maps.
-              </p>
+              <p className="mt-5 text-xs leading-5 text-[#718294]">{t.footnote}</p>
             </>
           ) : state === 'loading' || state === 'idle' ? (
             <div className="grid gap-4 xl:grid-cols-3" aria-live="polite">
@@ -226,9 +254,7 @@ export function GoogleReviews() {
             </div>
           ) : (
             <div className="flex min-h-64 items-center rounded-2xl border border-[#e1e7ec] bg-[#f7f9fa] p-6 text-sm leading-6 text-[#607183]">
-              Recenziile live se afișează când conexiunea Google Maps este
-              disponibilă. Profilul oficial rămâne accesibil prin butonul din
-              stânga.
+              {t.unavailable}
             </div>
           )}
         </div>
