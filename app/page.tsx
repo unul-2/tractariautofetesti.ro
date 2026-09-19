@@ -297,17 +297,21 @@ export default function Home() {
   const t = copy[language];
 
   useEffect(() => {
-    const saved = window.localStorage.getItem(languageStorageKey);
-    if (saved === 'en' || saved === 'ro') {
-      setLanguage(saved);
-      document.documentElement.lang = saved;
-    }
+    const timer = window.setTimeout(() => {
+      const saved = window.localStorage.getItem(languageStorageKey);
+      if (saved === 'en' || saved === 'ro') {
+        setLanguage(saved);
+        document.documentElement.setAttribute('lang', saved);
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, []);
 
   const switchLanguage = (next: Language) => {
     setLanguage(next);
     window.localStorage.setItem(languageStorageKey, next);
-    document.documentElement.lang = next;
+    document.documentElement.setAttribute('lang', next);
     window.dispatchEvent(new CustomEvent('taf-language-change', { detail: next }));
   };
 
