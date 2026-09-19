@@ -41,7 +41,7 @@ const copy = {
     verifiedReviews: 'Recenzii Google verificate',
     heroLine1: 'Tractări auto Fetești.',
     heroLine2: 'Ai rămas pe drum?',
-    heroLine3: 'Sună-ne direct.',
+    heroLine3: 'Ajutor direct, fără complicații.',
     heroCopy:
       'Pornim din Fetești și intervenim în mod uzual pe o rază de aproximativ 40–50 km, inclusiv în zona A2. Pentru mai departe, confirmăm la telefon înainte de plecare.',
     callNow: 'Sună acum',
@@ -105,7 +105,7 @@ const copy = {
     coverageKicker: 'Acoperire',
     coverageTitle: 'Punct de plecare: Fetești.',
     coverageCopy:
-      'Zona uzuală de intervenție este de aproximativ 40–50 km în jurul Feteștiului. Pentru distanțe mai mari, sună-ne și verificăm disponibilitatea înainte de plecare.',
+      'Zona uzuală de intervenție este de aproximativ 40–50 km în jurul Feteștiului. Pentru distanțe mai mari, verificăm disponibilitatea înainte de plecare.',
     checkAvailability: 'Verifică disponibilitatea',
     interventionArea: 'Zona de intervenție',
     coverage: [
@@ -121,7 +121,7 @@ const copy = {
     contactCopy:
       'Spune-ne locația, mașina și destinația. Îți confirmăm direct dacă putem prelua intervenția.',
     faqKicker: 'Întrebări frecvente',
-    faqTitle: 'Informația esențială, înainte să suni.',
+    faqTitle: 'Informația esențială, înainte să ne contactezi.',
     faqs: [
       {
         question: 'Ce trebuie să vă spun când sun?',
@@ -172,7 +172,7 @@ const copy = {
     verifiedReviews: 'Verified Google reviews',
     heroLine1: 'Vehicle recovery Fetești.',
     heroLine2: 'Stranded on the road?',
-    heroLine3: 'Call us directly.',
+    heroLine3: 'Straightforward roadside help.',
     heroCopy:
       'We start from Fetești and normally cover approximately 40–50 km, including the nearby A2 area. For longer distances, call first and we will confirm before departure.',
     callNow: 'Call now',
@@ -236,7 +236,7 @@ const copy = {
     coverageKicker: 'Coverage',
     coverageTitle: 'Starting point: Fetești.',
     coverageCopy:
-      'Our usual service area is approximately 40–50 km around Fetești. For longer distances, call us first and we will confirm whether we can take the job.',
+      'Our usual service area is approximately 40–50 km around Fetești. For longer distances, we confirm availability before departure.',
     checkAvailability: 'Check availability',
     interventionArea: 'Service area',
     coverage: [
@@ -252,7 +252,7 @@ const copy = {
     contactCopy:
       'Tell us your location, vehicle and destination. We will confirm directly whether we can take the job.',
     faqKicker: 'Frequently asked questions',
-    faqTitle: 'The essential information before you call.',
+    faqTitle: 'The essential information before you contact us.',
     faqs: [
       {
         question: 'What should I tell you when I call?',
