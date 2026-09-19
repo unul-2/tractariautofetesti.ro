@@ -399,7 +399,7 @@ export default function Home() {
           </div>
         </header>
 
-        <div className="relative z-10 mx-auto grid max-w-7xl gap-10 px-5 pb-28 pt-20 sm:px-8 sm:pt-28 lg:grid-cols-[1.12fr_.88fr] lg:items-end lg:px-10 lg:pb-24 lg:pt-32">
+        <div className="relative z-10 mx-auto grid max-w-7xl gap-10 px-5 pb-24 pt-14 sm:px-8 sm:pb-28 sm:pt-24 lg:grid-cols-[1.12fr_.88fr] lg:items-end lg:px-10 lg:pb-24 lg:pt-32">
           <div className="hero-copy max-w-3xl">
             <div className="mb-6 flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-2 rounded-full border border-[#f6a817]/35 bg-[#f6a817]/12 px-3 py-1.5 text-xs font-black uppercase tracking-[.12em] text-[#ffd36f]">
@@ -415,30 +415,32 @@ export default function Home() {
               </a>
             </div>
 
-            <h1 className="max-w-3xl text-[2.8rem] font-black leading-[.96] tracking-[-.058em] text-balance sm:text-6xl lg:text-[5.35rem]">
+            <h1 className="max-w-3xl text-[2.45rem] font-black leading-[.96] tracking-[-.058em] text-balance min-[390px]:text-[2.7rem] sm:text-6xl lg:text-[5.35rem]">
               {t.heroLine1}
               <span className="block text-[#f6a817]">{t.heroLine2}</span>
               {t.heroLine3}
             </h1>
 
-            <p className="mt-7 max-w-2xl text-base font-medium leading-7 text-white/72 sm:text-lg sm:leading-8">
+            <p className="mt-5 max-w-2xl text-[15px] font-medium leading-6 text-white/72 sm:mt-7 sm:text-lg sm:leading-8">
               {t.heroCopy}
             </p>
 
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-              <PhoneLink className="cta-primary group inline-flex min-h-16 items-center justify-center gap-3 rounded-2xl bg-[#f6a817] px-6 text-base font-black text-[#071827] shadow-[0_18px_55px_rgba(246,168,23,.22)] transition hover:-translate-y-0.5 hover:bg-[#ffc451]">
+            <div className="mt-7 grid grid-cols-[1.12fr_.88fr] gap-2.5 sm:mt-9 sm:flex sm:flex-row sm:gap-3">
+              <PhoneLink className="cta-primary group inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-[#f6a817] px-3 text-sm font-black text-[#071827] shadow-[0_18px_55px_rgba(246,168,23,.22)] transition hover:-translate-y-0.5 hover:bg-[#ffc451] sm:min-h-16 sm:gap-3 sm:px-6 sm:text-base">
                 <Phone className="h-5 w-5" aria-hidden="true" />
-                {t.callNow} · {phoneNumber}
-                <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" aria-hidden="true" />
+                <span>{t.callNow}</span>
+                <span className="hidden sm:inline">· {phoneNumber}</span>
+                <ArrowRight className="hidden h-4 w-4 transition group-hover:translate-x-1 sm:block" aria-hidden="true" />
               </PhoneLink>
 
-              <WhatsAppLocationButton className="inline-flex min-h-16 items-center justify-center gap-3 rounded-2xl border border-white/24 bg-white/8 px-6 text-base font-black text-white backdrop-blur-md transition hover:-translate-y-0.5 hover:border-white/45 hover:bg-white/13">
+              <WhatsAppLocationButton className="inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl border border-white/24 bg-white/8 px-3 text-sm font-black text-white backdrop-blur-md transition hover:-translate-y-0.5 hover:border-white/45 hover:bg-white/13 sm:min-h-16 sm:gap-3 sm:px-6 sm:text-base">
                 <MessageCircle className="h-5 w-5" aria-hidden="true" />
-                {t.whatsappLocation}
+                <span className="sm:hidden">WhatsApp</span>
+                <span className="hidden sm:inline">{t.whatsappLocation}</span>
               </WhatsAppLocationButton>
             </div>
 
-            <div className="mt-7 flex flex-wrap gap-x-7 gap-y-3 text-sm font-semibold text-white/60">
+            <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-xs font-semibold text-white/60 sm:mt-7 sm:gap-x-7 sm:gap-y-3 sm:text-sm">
               <span className="inline-flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-[#ffd36f]" aria-hidden="true" />
                 {t.safePickup}
@@ -493,11 +495,11 @@ export default function Home() {
 
         <div className="absolute inset-x-0 bottom-0 z-10">
           <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
-            <div className="grid overflow-hidden rounded-t-3xl border-x border-t border-white/10 bg-[#0b2235]/94 shadow-2xl backdrop-blur-xl sm:grid-cols-3">
+            <div className="grid grid-cols-3 overflow-hidden rounded-t-3xl border-x border-t border-white/10 bg-[#0b2235]/94 shadow-2xl backdrop-blur-xl">
               {t.proof.map(([strong, label]) => (
-                <div key={label} className="flex items-center gap-3 border-b border-white/8 px-5 py-4 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0">
-                  <span className="text-xl font-black tracking-[-.04em] text-[#ffd36f]">{strong}</span>
-                  <span className="text-xs font-bold uppercase tracking-[.09em] text-white/53">{label}</span>
+                <div key={label} className="flex min-w-0 flex-col justify-center border-r border-white/8 px-2.5 py-3.5 last:border-r-0 sm:flex-row sm:items-center sm:gap-3 sm:px-5 sm:py-4">
+                  <span className="truncate text-base font-black tracking-[-.04em] text-[#ffd36f] sm:text-xl">{strong}</span>
+                  <span className="mt-0.5 text-[9px] font-bold uppercase leading-3 tracking-[.08em] text-white/53 sm:mt-0 sm:text-xs sm:leading-normal sm:tracking-[.09em]">{label}</span>
                 </div>
               ))}
             </div>

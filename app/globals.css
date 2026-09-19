@@ -341,6 +341,15 @@ a {
   background: #f8fafb;
 }
 
+.reviews-mobile-track {
+  scrollbar-width: none;
+  overscroll-behavior-inline: contain;
+}
+
+.reviews-mobile-track::-webkit-scrollbar {
+  display: none;
+}
+
 .prose h2 {
   margin-top: 2.5rem;
   font-size: 1.4rem;
@@ -408,7 +417,7 @@ a {
 
 @media (max-width: 639px) {
   .roadside-hero {
-    min-height: 850px;
+    min-height: 780px;
   }
 
   .hero-grid {
