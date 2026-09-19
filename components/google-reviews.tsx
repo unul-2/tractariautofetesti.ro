@@ -253,8 +253,11 @@ export function GoogleReviews({ language = 'ro' }: { language?: Language }) {
               ))}
             </div>
           ) : (
-            <div className="flex min-h-64 items-center rounded-2xl border border-[#e1e7ec] bg-[#f7f9fa] p-6 text-sm leading-6 text-[#607183]">
-              {t.unavailable}
+            <div className="rounded-2xl border border-[#e1e7ec] bg-[#f7f9fa] p-5 text-sm leading-6 text-[#607183] sm:p-6">
+              <div className="flex items-start gap-3">
+                <BadgeCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#a46600]" aria-hidden="true" />
+                <p>{t.unavailable}</p>
+              </div>
             </div>
           )}
         </div>
