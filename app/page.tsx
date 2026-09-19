@@ -60,13 +60,13 @@ const copy = {
     proof: [
       ['Fetești', 'Punct de plecare'],
       ['~50 km', 'Zona uzuală'],
-      ['24/7', 'Telefon direct'],
+      ['24/7', 'Disponibilitate'],
     ],
     servicesKicker: 'Servicii',
     servicesTitle: 'Exact ce ai nevoie când mașina nu mai merge.',
     servicesCopy:
       'Fără meniuri complicate și fără formulare lungi. Ne dai informația esențială, stabilim ce poate fi făcut și confirmăm intervenția.',
-    confirmByPhone: 'Confirmăm telefonic',
+    confirmByPhone: 'Intervenție adaptată situației',
     services: [
       {
         number: '01',
@@ -191,13 +191,13 @@ const copy = {
     proof: [
       ['Fetești', 'Starting point'],
       ['~50 km', 'Usual area'],
-      ['24/7', 'Direct phone'],
+      ['24/7', 'Availability'],
     ],
     servicesKicker: 'Services',
     servicesTitle: 'The roadside help you need when the car stops.',
     servicesCopy:
       'No complicated menus and no long forms. Give us the essential details, we assess the situation and confirm the intervention.',
-    confirmByPhone: 'Confirmed by phone',
+    confirmByPhone: 'Case-specific service',
     services: [
       {
         number: '01',
@@ -505,6 +505,12 @@ export default function Home() {
         </div>
       </section>
 
+      <section id="recenzii" className="scroll-mt-24 border-y border-[#dce3e9] bg-[#eaf0f4] py-12 sm:py-16 lg:py-18">
+        <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
+          <GoogleReviews language={language} />
+        </div>
+      </section>
+
       <section id="servicii" className="scroll-mt-24 py-20 sm:py-24 lg:py-28">
         <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
           <div className="grid gap-8 lg:grid-cols-[.82fr_1.18fr] lg:items-end">
@@ -531,10 +537,6 @@ export default function Home() {
                   </span>
                   <h3 className="mt-8 text-xl font-black tracking-[-.035em]">{service.title}</h3>
                   <p className="mt-3 text-sm leading-6 text-[#607183]">{service.text}</p>
-                  <span className="mt-7 inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-[.1em] text-[#a46600]">
-                    {t.confirmByPhone}
-                    <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-1" aria-hidden="true" />
-                  </span>
                 </article>
               );
             })}
@@ -589,10 +591,12 @@ export default function Home() {
                 <p className="mt-5 max-w-xl text-base leading-7 text-[#607183]">
                   {t.coverageCopy}
                 </p>
-                <PhoneLink className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-xl bg-[#0b2235] px-5 text-sm font-black text-white transition hover:bg-[#173c5c]">
-                  <Phone className="h-4 w-4" aria-hidden="true" />
-                  {t.checkAvailability}
-                </PhoneLink>
+                <div className="mt-7 inline-flex items-center gap-2 rounded-xl border border-[#dce3e9] bg-[#f7f9fa] px-4 py-3 text-sm font-bold text-[#52677b]">
+                  <Clock3 className="h-4 w-4 text-[#a46600]" aria-hidden="true" />
+                  {language === 'ro'
+                    ? 'Pentru mai departe de zona uzuală, confirmăm disponibilitatea înainte de plecare.'
+                    : 'Beyond the usual area, we confirm availability before departure.'}
+                </div>
               </div>
 
               <div className="coverage-visual relative min-h-[370px] overflow-hidden bg-[#0b2235] p-7 text-white sm:p-10">
@@ -640,11 +644,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="recenzii" className="scroll-mt-24 border-y border-[#dce3e9] bg-[#eaf0f4] py-20 sm:py-24 lg:py-28">
-        <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
-          <GoogleReviews language={language} />
-        </div>
-      </section>
+
 
       <section id="contact" className="scroll-mt-24 bg-[#071827] py-20 text-white sm:py-24 lg:py-28">
         <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
