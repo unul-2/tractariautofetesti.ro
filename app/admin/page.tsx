@@ -19,7 +19,7 @@ export default function AdminPage() {
       <section className="mx-auto max-w-6xl px-5 py-14 sm:px-8 lg:px-10">
         <p className="section-kicker">Dashboard</p>
         <h1 className="mt-3 text-4xl font-extrabold tracking-[-.05em] sm:text-5xl">Ce se întâmplă pe site, pe înțeles.</h1>
-        <p className="mt-4 max-w-2xl text-base leading-7 text-[#52657a]">Aici vedem doar metrici aggregate pentru comparația cu Google Ads: accesări, tipul dispozitivului și apăsările pe Call sau WhatsApp. Nu stocăm locația exactă, numere de telefon, conversații sau IP-uri.</p>
+        <p className="mt-4 max-w-2xl text-base leading-7 text-[#52657a]">Aici comparăm metricile agregate ale site-ului cu datele Google Ads. Citirea Ads este implicit read-only; modificările sunt separate într-un layer securizat cu PIN temporar și audit. Nu stocăm locația exactă, numere de telefon, conversații sau IP-uri.</p>
         <AdminDashboard />
       </section>
     </main>
