@@ -1,13 +1,26 @@
+import { createSign } from 'node:crypto';
+
 const defaultApiVersion = 'v25';
+
+type GoogleAdsAuth =
+  | {
+      kind: 'service-account';
+      email: string;
+      privateKey: string;
+    }
+  | {
+      kind: 'refresh-token';
+      clientId: string;
+      clientSecret: string;
+      refreshToken: string;
+    };
 
 type GoogleAdsConfig = {
   apiVersion: string;
-  clientId: string;
-  clientSecret: string;
+  auth: GoogleAdsAuth;
   customerId: string;
-  developerToken: string;
+  developerToken?: string;
   loginCustomerId?: string;
-  refreshToken: string;
 };
 
 type SearchRow = {
@@ -61,32 +74,58 @@ function cleanCustomerId(value: string) {
 }
 
 export function googleAdsConfigState() {
-  const required = [
-    'GOOGLE_ADS_CLIENT_ID',
-    'GOOGLE_ADS_CLIENT_SECRET',
-    'GOOGLE_ADS_REFRESH_TOKEN',
-    'GOOGLE_ADS_DEVELOPER_TOKEN',
-    'GOOGLE_ADS_CUSTOMER_ID',
-  ] as const;
-  const missing = required.filter((name) => !env(name));
+  const customerId = env('GOOGLE_ADS_CUSTOMER_ID');
+  const serviceAccountReady =
+    Boolean(env('GOOGLE_ADS_SERVICE_ACCOUNT_EMAIL')) &&
+    Boolean(env('GOOGLE_ADS_SERVICE_ACCOUNT_PRIVATE_KEY'));
+  const refreshTokenReady =
+    Boolean(env('GOOGLE_ADS_CLIENT_ID')) &&
+    Boolean(env('GOOGLE_ADS_CLIENT_SECRET')) &&
+    Boolean(env('GOOGLE_ADS_REFRESH_TOKEN'));
+
+  const missing: string[] = [];
+  if (!customerId) missing.push('GOOGLE_ADS_CUSTOMER_ID');
+  if (!serviceAccountReady && !refreshTokenReady) {
+    missing.push(
+      'GOOGLE_ADS_SERVICE_ACCOUNT_EMAIL + GOOGLE_ADS_SERVICE_ACCOUNT_PRIVATE_KEY',
+    );
+  }
+
   return {
     configured: missing.length === 0,
+    authMode: serviceAccountReady
+      ? ('service-account' as const)
+      : refreshTokenReady
+        ? ('refresh-token' as const)
+        : null,
     missing,
   };
 }
 
 function getConfig(): GoogleAdsConfig {
   const state = googleAdsConfigState();
-  if (!state.configured) {
+  if (!state.configured || !state.authMode) {
     throw new Error(`Google Ads configuration incomplete: ${state.missing.join(', ')}`);
   }
 
+  const auth: GoogleAdsAuth =
+    state.authMode === 'service-account'
+      ? {
+          kind: 'service-account',
+          email: env('GOOGLE_ADS_SERVICE_ACCOUNT_EMAIL'),
+          privateKey: env('GOOGLE_ADS_SERVICE_ACCOUNT_PRIVATE_KEY').replace(/\\n/g, '\n'),
+        }
+      : {
+          kind: 'refresh-token',
+          clientId: env('GOOGLE_ADS_CLIENT_ID'),
+          clientSecret: env('GOOGLE_ADS_CLIENT_SECRET'),
+          refreshToken: env('GOOGLE_ADS_REFRESH_TOKEN'),
+        };
+
   return {
     apiVersion: env('GOOGLE_ADS_API_VERSION') || defaultApiVersion,
-    clientId: env('GOOGLE_ADS_CLIENT_ID'),
-    clientSecret: env('GOOGLE_ADS_CLIENT_SECRET'),
-    refreshToken: env('GOOGLE_ADS_REFRESH_TOKEN'),
-    developerToken: env('GOOGLE_ADS_DEVELOPER_TOKEN'),
+    auth,
+    developerToken: env('GOOGLE_ADS_DEVELOPER_TOKEN') || undefined,
     customerId: cleanCustomerId(env('GOOGLE_ADS_CUSTOMER_ID')),
     loginCustomerId: env('GOOGLE_ADS_LOGIN_CUSTOMER_ID')
       ? cleanCustomerId(env('GOOGLE_ADS_LOGIN_CUSTOMER_ID'))
@@ -94,15 +133,56 @@ function getConfig(): GoogleAdsConfig {
   };
 }
 
-async function getAccessToken(config: GoogleAdsConfig) {
+function base64UrlJson(value: Record<string, unknown>) {
+  return Buffer.from(JSON.stringify(value)).toString('base64url');
+}
+
+async function getServiceAccountAccessToken(auth: Extract<GoogleAdsAuth, { kind: 'service-account' }>) {
+  const now = Math.floor(Date.now() / 1000);
+  const header = base64UrlJson({ alg: 'RS256', typ: 'JWT' });
+  const claims = base64UrlJson({
+    iss: auth.email,
+    scope: 'https://www.googleapis.com/auth/adwords',
+    aud: 'https://oauth2.googleapis.com/token',
+    iat: now,
+    exp: now + 3600,
+  });
+  const unsigned = `${header}.${claims}`;
+  const signer = createSign('RSA-SHA256');
+  signer.update(unsigned);
+  signer.end();
+  const signature = signer.sign(auth.privateKey).toString('base64url');
+  const assertion = `${unsigned}.${signature}`;
+
   const body = new URLSearchParams({
-    grant_type: 'refresh_token',
-    client_id: config.clientId,
-    client_secret: config.clientSecret,
-    refresh_token: config.refreshToken,
+    grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+    assertion,
   });
 
-  const response = await fetch('https://www.googleapis.com/oauth2/v3/token', {
+  const response = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Google service-account OAuth failed with status ${response.status}`);
+  }
+
+  const payload = (await response.json()) as { access_token?: string };
+  if (!payload.access_token) throw new Error('Google OAuth returned no access token');
+  return payload.access_token;
+}
+
+async function getRefreshTokenAccessToken(auth: Extract<GoogleAdsAuth, { kind: 'refresh-token' }>) {
+  const body = new URLSearchParams({
+    grant_type: 'refresh_token',
+    client_id: auth.clientId,
+    client_secret: auth.clientSecret,
+    refresh_token: auth.refreshToken,
+  });
+
+  const response = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: { 'content-type': 'application/x-www-form-urlencoded' },
     body,
@@ -117,6 +197,12 @@ async function getAccessToken(config: GoogleAdsConfig) {
   return payload.access_token;
 }
 
+async function getAccessToken(config: GoogleAdsConfig) {
+  return config.auth.kind === 'service-account'
+    ? getServiceAccountAccessToken(config.auth)
+    : getRefreshTokenAccessToken(config.auth);
+}
+
 async function googleAdsRequest(
   config: GoogleAdsConfig,
   path: string,
@@ -126,8 +212,10 @@ async function googleAdsRequest(
   const headers: Record<string, string> = {
     authorization: `Bearer ${accessToken}`,
     'content-type': 'application/json',
-    'developer-token': config.developerToken,
   };
+  if (config.developerToken) {
+    headers['developer-token'] = config.developerToken;
+  }
   if (config.loginCustomerId) {
     headers['login-customer-id'] = config.loginCustomerId;
   }
