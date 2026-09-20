@@ -60,6 +60,19 @@ type GoogleAdsPayload = {
   } | null;
 };
 
+type AuditEvent = {
+  storedAt: string;
+  actorHash: string;
+  action: string;
+  details: Record<string, unknown>;
+};
+
+type AuditPayload = {
+  days: number;
+  count: number;
+  events: AuditEvent[];
+};
+
 type DashboardUser = Pick<User, 'email' | 'roles'>;
 
 const demoDashboardEnabled = process.env.NEXT_PUBLIC_ADMIN_DEMO_ENABLED === 'true';
@@ -174,10 +187,13 @@ export function AdminDashboard() {
   const [pin, setPin] = useState('');
   const [pinBusy, setPinBusy] = useState(false);
   const [pinMessage, setPinMessage] = useState<string | null>(null);
+  const [days, setDays] = useState<7 | 14 | 30>(14);
+  const [audit, setAudit] = useState<AuditPayload | null>(null);
+  const [auditStatus, setAuditStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
 
-  const loadMetrics = async () => {
+  const loadMetrics = async (selectedDays = days) => {
     setStatus('loading');
-    const response = await fetch('/api/admin/metrics?days=14', { credentials: 'same-origin', cache: 'no-store' });
+    const response = await fetch(`/api/admin/metrics?days=${selectedDays}`, { credentials: 'same-origin', cache: 'no-store' });
     if (response.status === 401 || response.status === 403) {
       setStatus('unauthorized');
       return;
@@ -190,9 +206,9 @@ export function AdminDashboard() {
     setStatus('ready');
   };
 
-  const loadAds = async () => {
+  const loadAds = async (selectedDays = days) => {
     setAdsStatus('loading');
-    const response = await fetch('/api/admin/google-ads?days=14', {
+    const response = await fetch(`/api/admin/google-ads?days=${selectedDays}`, {
       credentials: 'same-origin',
       cache: 'no-store',
     });
@@ -201,12 +217,33 @@ export function AdminDashboard() {
     setAdsStatus(response.ok || response.status === 502 ? 'ready' : 'error');
   };
 
-  const refreshAll = async () => {
+  const loadAudit = async () => {
+    setAuditStatus('loading');
+    const response = await fetch('/api/admin/google-ads/audit?days=30&limit=30', {
+      credentials: 'same-origin',
+      cache: 'no-store',
+    });
+    if (!response.ok) {
+      setAuditStatus('error');
+      return;
+    }
+    setAudit((await response.json()) as AuditPayload);
+    setAuditStatus('ready');
+  };
+
+  const refreshAll = async (selectedDays = days) => {
     if (isDemoDashboard) {
       setMetrics(demoMetrics);
       return;
     }
-    await Promise.all([loadMetrics(), loadAds()]);
+    await Promise.all([loadMetrics(selectedDays), loadAds(selectedDays), loadAudit()]);
+  };
+
+  const changePeriod = async (selectedDays: 7 | 14 | 30) => {
+    setDays(selectedDays);
+    if (!isDemoDashboard) {
+      await Promise.all([loadMetrics(selectedDays), loadAds(selectedDays)]);
+    }
   };
 
   useEffect(() => {
@@ -215,7 +252,7 @@ export function AdminDashboard() {
         await handleAuthCallback();
         const currentUser = await getUser();
         setUser(currentUser);
-        if (currentUser) await Promise.all([loadMetrics(), loadAds()]);
+        if (currentUser) await Promise.all([loadMetrics(14), loadAds(14), loadAudit()]);
         else setStatus('unauthorized');
       } catch {
         setStatus('unauthorized');
@@ -288,7 +325,7 @@ export function AdminDashboard() {
 
       setPin('');
       setPinMessage('Edit Mode deblocat temporar.');
-      await loadAds();
+      await Promise.all([loadAds(), loadAudit()]);
     } finally {
       setPinBusy(false);
     }
@@ -303,7 +340,7 @@ export function AdminDashboard() {
         credentials: 'same-origin',
       });
       setPinMessage('Edit Mode blocat.');
-      await loadAds();
+      await Promise.all([loadAds(), loadAudit()]);
     } finally {
       setPinBusy(false);
     }
@@ -323,10 +360,24 @@ export function AdminDashboard() {
           <p className="mt-1 text-sm text-[#52657a]">
             {isDemoDashboard
               ? 'Demo de prezentare · date fictive, fără acces la metricile reale'
-              : 'Ultimele 14 zile · site + Google Ads în același dashboard'}
+              : `Ultimele ${days} zile · site + Google Ads în același dashboard`}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex rounded-lg border border-[#cbd6e2] bg-[#f7f9fa] p-1" aria-label="Perioadă raport">
+            {([7, 14, 30] as const).map((value) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => void changePeriod(value)}
+                className={`rounded-md px-3 py-1.5 text-xs font-extrabold transition ${
+                  days === value ? 'bg-[#0c2035] text-white' : 'text-[#52657a] hover:bg-white'
+                }`}
+              >
+                {value} zile
+              </button>
+            ))}
+          </div>
           <button className="rounded-lg border border-[#cbd6e2] px-4 py-2.5 text-sm font-bold text-[#30465d]" type="button" onClick={() => void refreshAll()}>Actualizează</button>
           <button className="rounded-lg bg-[#0c2035] px-4 py-2.5 text-sm font-bold text-white" type="button" onClick={() => void handleLogout()}>Ieși</button>
         </div>
@@ -418,7 +469,7 @@ export function AdminDashboard() {
                 </div>
 
                 <div className="mt-4 rounded-xl border border-[#ead8ae] bg-[#fff9eb] p-4">
-                  <p className="text-sm font-extrabold text-[#714b08]">Ads → site, ultimele 14 zile</p>
+                  <p className="text-sm font-extrabold text-[#714b08]">Ads → site, ultimele {days} zile</p>
                   <p className="mt-1 text-sm leading-6 text-[#7c6334]">
                     {number(ads.report.summary.clicks)} clickuri Google Ads · {googleSessions} sesiuni măsurate cu sursă Google · {metrics?.summary.callClicks ?? 0} apăsări pe „Sună” pe site.
                   </p>
@@ -504,6 +555,85 @@ export function AdminDashboard() {
           </aside>
         </div>
       </section>
+
+      {!isDemoDashboard ? (
+        <section className="mt-8 rounded-[1.75rem] border border-[#cfd9e3] bg-white p-6 shadow-[0_18px_50px_rgba(13,34,52,.05)]">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+            <div>
+              <p className="text-xs font-extrabold uppercase tracking-[.14em] text-[#9f6504]">Readiness + audit</p>
+              <h2 className="mt-2 text-2xl font-extrabold tracking-[-.04em] text-[#1e344b]">Starea integrării Google Ads</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-[#607183]">
+                Putem verifica partea de securitate și infrastructură chiar înainte să conectăm credentialele Google.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => void loadAudit()}
+              className="rounded-lg border border-[#cbd6e2] px-4 py-2.5 text-sm font-bold text-[#30465d]"
+            >
+              Reîncarcă auditul
+            </button>
+          </div>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              ['Admin Identity', 'Activ', true],
+              ['Google Ads API', ads?.connected ? 'Conectat' : 'Neconectat', Boolean(ads?.connected)],
+              ['PIN security', ads?.edit.securityConfigured ? 'Configurat' : 'În așteptare', Boolean(ads?.edit.securityConfigured)],
+              ['Write switch', ads?.edit.writeEnabled ? 'ACTIV' : 'OPRIT', !ads?.edit.writeEnabled],
+            ].map(([label, value, ok]) => (
+              <article key={String(label)} className="rounded-xl border border-[#dce2e9] bg-[#f8fafb] p-4">
+                <p className="text-xs font-bold uppercase tracking-[.08em] text-[#718294]">{label}</p>
+                <p className={`mt-2 text-base font-extrabold ${ok ? 'text-[#17623b]' : 'text-[#8a5a08]'}`}>
+                  {value}
+                </p>
+              </article>
+            ))}
+          </div>
+
+          <div className="mt-6 border-t border-[#e6ebef] pt-5">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-base font-extrabold text-[#1e344b]">Jurnal securitate Ads</h3>
+                <p className="mt-1 text-xs text-[#718294]">Ultimele evenimente din 30 zile. PIN-ul și secretele nu sunt stocate.</p>
+              </div>
+              {audit ? <span className="text-xs font-bold text-[#718294]">{audit.count} evenimente</span> : null}
+            </div>
+
+            {auditStatus === 'loading' ? (
+              <p className="mt-4 text-sm text-[#607183]">Se încarcă auditul…</p>
+            ) : auditStatus === 'error' ? (
+              <p className="mt-4 rounded-xl bg-[#fff1ee] p-4 text-sm font-semibold text-[#9a3412]">Auditul nu a putut fi citit.</p>
+            ) : audit?.events.length ? (
+              <div className="mt-4 overflow-hidden rounded-xl border border-[#dce2e9]">
+                {audit.events.map((event) => (
+                  <div key={`${event.storedAt}-${event.action}`} className="grid gap-1 border-b border-[#edf1f4] px-4 py-3 text-sm last:border-b-0 sm:grid-cols-[170px_1fr_auto] sm:items-center sm:gap-4">
+                    <time className="text-xs font-semibold text-[#718294]" dateTime={event.storedAt}>
+                      {new Date(event.storedAt).toLocaleString('ro-RO', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </time>
+                    <span className="font-bold text-[#30465d]">
+                      {event.action.replaceAll('_', ' ')}
+                    </span>
+                    <span className="text-[11px] font-semibold text-[#8a98a7]">
+                      admin {event.actorHash.slice(0, 8)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-4 rounded-xl bg-[#f7f9fa] p-4 text-sm text-[#607183]">
+                Nu există încă evenimente Ads. După configurarea PIN-ului, încercările de unlock și modificările vor apărea aici.
+              </p>
+            )}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }

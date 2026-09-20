@@ -18,6 +18,13 @@ type EditSessionPayload = {
   sub: string;
 };
 
+export type AdminAuditEvent = {
+  storedAt: string;
+  actorHash: string;
+  action: string;
+  details: Record<string, unknown>;
+};
+
 const attemptStoreName = 'tractari-admin-ads-security';
 const auditStoreName = 'tractari-admin-audit';
 const cookieName = 'taf_ads_edit';
@@ -81,7 +88,38 @@ export async function writeAdminAudit(
     actorHash: userSubject(user),
     action,
     details,
-  });
+  } satisfies AdminAuditEvent);
+}
+
+export async function readAdminAudit(days = 30, limit = 50) {
+  const store = getStore(auditStoreName);
+  const keys: string[] = [];
+  const today = new Date();
+
+  for (let index = 0; index < days; index += 1) {
+    const date = new Date(
+      Date.UTC(
+        today.getUTCFullYear(),
+        today.getUTCMonth(),
+        today.getUTCDate() - index,
+      ),
+    );
+    const prefix = `ads/${date.toISOString().slice(0, 10)}/`;
+    const result = await store.list({ prefix });
+    keys.push(...result.blobs.map((blob) => blob.key));
+  }
+
+  const selected = keys.sort().reverse().slice(0, limit);
+  const events = await Promise.all(
+    selected.map(
+      (key) =>
+        store.get(key, { type: 'json' }) as Promise<AdminAuditEvent | null>,
+    ),
+  );
+
+  return events
+    .filter((event): event is AdminAuditEvent => Boolean(event))
+    .sort((left, right) => right.storedAt.localeCompare(left.storedAt));
 }
 
 export async function verifyPinAttempt(user: AdminUser, pin: string) {
