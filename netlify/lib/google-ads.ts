@@ -151,7 +151,7 @@ async function getServiceAccountAccessToken(auth: Extract<GoogleAdsAuth, { kind:
   const signer = createSign('RSA-SHA256');
   signer.update(unsigned);
   signer.end();
-  const signature = signer.sign(auth.privateKey).toString('base64url');
+  const signature = signer.sign(auth.privateKey, 'base64url');
   const assertion = `${unsigned}.${signature}`;
 
   const body = new URLSearchParams({
