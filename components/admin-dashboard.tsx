@@ -12,6 +12,13 @@ type Metrics = {
     whatsappLocationClicks: number;
     callClickRate: number;
   };
+  google: {
+    sessions: number;
+    callClicks: number;
+    whatsappClicks: number;
+    whatsappLocationClicks: number;
+    contactActions: number;
+  };
   devices: { label: string; value: number }[];
   sources: { label: string; value: number }[];
 };
@@ -85,6 +92,13 @@ const demoMetrics: Metrics = {
     whatsappClicks: 11,
     whatsappLocationClicks: 7,
     callClickRate: 18.6,
+  },
+  google: {
+    sessions: 48,
+    callClicks: 12,
+    whatsappClicks: 8,
+    whatsappLocationClicks: 5,
+    contactActions: 20,
   },
   devices: [
     { label: 'mobile', value: 71 },
@@ -175,6 +189,41 @@ function ron(value: number) {
 
 function number(value: number, maximumFractionDigits = 0) {
   return new Intl.NumberFormat('ro-RO', { maximumFractionDigits }).format(value);
+}
+
+function ComparisonLane({
+  title,
+  eyebrow,
+  status,
+  items,
+}: {
+  title: string;
+  eyebrow: string;
+  status: string;
+  items: { label: string; value: string; hint: string }[];
+}) {
+  return (
+    <article className="overflow-hidden rounded-2xl border border-[#dce2e9] bg-white">
+      <div className="flex items-center justify-between gap-3 border-b border-[#e9eef2] bg-[#f8fafb] px-5 py-4">
+        <div>
+          <p className="text-[11px] font-extrabold uppercase tracking-[.12em] text-[#9f6504]">{eyebrow}</p>
+          <h3 className="mt-1 text-lg font-extrabold text-[#1e344b]">{title}</h3>
+        </div>
+        <span className="rounded-full bg-[#eef2f5] px-2.5 py-1 text-[11px] font-extrabold text-[#52657a]">{status}</span>
+      </div>
+      <dl>
+        {items.map((item) => (
+          <div key={item.label} className="grid grid-cols-[1fr_auto] gap-4 border-b border-[#edf1f4] px-5 py-4 last:border-b-0">
+            <div>
+              <dt className="text-sm font-bold text-[#30465d]">{item.label}</dt>
+              <p className="mt-1 text-xs leading-5 text-[#718294]">{item.hint}</p>
+            </div>
+            <dd className="self-center text-right text-xl font-extrabold tracking-[-.03em] text-[#132c43]">{item.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </article>
+  );
 }
 
 export function AdminDashboard() {
@@ -348,9 +397,8 @@ export function AdminDashboard() {
 
   if (!user || status === 'unauthorized') return <LoginPanel onLogin={handleLogin} />;
 
-  const googleSessions = metrics?.sources.find((source) =>
-    source.label.toLowerCase().includes('google'),
-  )?.value ?? 0;
+  const googleSessions = metrics?.google.sessions ?? 0;
+  const adsSummary = ads?.report?.summary ?? null;
 
   return (
     <div className="mt-8">
@@ -392,6 +440,141 @@ export function AdminDashboard() {
 
       {status === 'loading' ? <p className="mt-6 text-sm font-semibold text-[#52657a]" aria-live="polite">Se încarcă datele site-ului…</p> : null}
       {status === 'error' ? <p className="mt-6 rounded-xl bg-[#fff1ee] p-4 text-sm font-semibold text-[#9a3412]">Datele nu au putut fi încărcate. Verifică dacă Netlify Identity și Netlify Blobs sunt activate pentru acest proiect.</p> : null}
+
+      {metrics ? (
+        <section aria-label="Comparație site și Google Ads" className="mt-6 overflow-hidden rounded-[1.75rem] border border-[#cfd9e3] bg-[#f4f7f9] shadow-[0_18px_50px_rgba(13,34,52,.06)]">
+          <div className="flex flex-col justify-between gap-3 bg-[#0b2033] px-6 py-5 text-white sm:flex-row sm:items-end">
+            <div>
+              <p className="text-xs font-extrabold uppercase tracking-[.14em] text-[#f6b62e]">Privire rapidă</p>
+              <h2 className="mt-2 text-2xl font-extrabold tracking-[-.04em]">Site vs Google Ads</h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-white/65">
+                Aceeași perioadă de {days} zile, două sisteme de măsurare. Valorile sunt puse alături ca să vezi rapid traseul campanie → site → contact.
+              </p>
+            </div>
+            <span className="w-fit rounded-full bg-white/10 px-3 py-1.5 text-xs font-extrabold uppercase tracking-[.1em] text-white/75">
+              {ads?.connected ? 'Ads conectat' : 'Ads în așteptare'}
+            </span>
+          </div>
+
+          <div className="grid gap-4 p-4 lg:grid-cols-2 lg:p-6">
+            <ComparisonLane
+              eyebrow="Date proprii"
+              title="Site"
+              status="Netlify"
+              items={[
+                {
+                  label: 'Sesiuni totale',
+                  value: number(metrics.summary.sessions),
+                  hint: 'Sesiuni măsurate pe landing page.',
+                },
+                {
+                  label: 'Sesiuni din Google',
+                  value: number(metrics.google.sessions),
+                  hint: 'Trafic cu sursă Google identificată de site.',
+                },
+                {
+                  label: 'Apăsări pe „Sună”',
+                  value: number(metrics.summary.callClicks),
+                  hint: 'Intenții de apel; nu înseamnă automat apel răspuns.',
+                },
+                {
+                  label: 'WhatsApp',
+                  value: number(metrics.summary.whatsappClicks),
+                  hint: 'Deschideri WhatsApp, inclusiv cele cu locație.',
+                },
+                {
+                  label: 'Contact din trafic Google',
+                  value: number(metrics.google.contactActions),
+                  hint: 'Sună + WhatsApp din sesiunile marcate cu sursă Google.',
+                },
+                {
+                  label: 'Rată click pe „Sună”',
+                  value: `${number(metrics.summary.callClickRate, 1)}%`,
+                  hint: 'Sesiuni care au apăsat butonul de apel.',
+                },
+              ]}
+            />
+
+            <ComparisonLane
+              eyebrow="Platformă publicitară"
+              title="Google Ads"
+              status={ads?.connected ? 'Read only' : 'Neconectat'}
+              items={[
+                {
+                  label: 'Afișări',
+                  value: adsSummary ? number(adsSummary.impressions) : '—',
+                  hint: 'De câte ori au fost afișate reclamele.',
+                },
+                {
+                  label: 'Clickuri',
+                  value: adsSummary ? number(adsSummary.clicks) : '—',
+                  hint: 'Clickuri raportate de Google Ads.',
+                },
+                {
+                  label: 'Conversii',
+                  value: adsSummary ? number(adsSummary.conversions, 1) : '—',
+                  hint: 'Conversii conform configurării din Google Ads.',
+                },
+                {
+                  label: 'Apeluri Ads',
+                  value: adsSummary ? number(adsSummary.phoneCalls) : '—',
+                  hint: 'Apeluri raportate direct de Google Ads.',
+                },
+                {
+                  label: 'Cheltuit',
+                  value: adsSummary ? ron(adsSummary.costRon) : '—',
+                  hint: 'Costul campaniei în perioada selectată.',
+                },
+                {
+                  label: 'CPC mediu',
+                  value: adsSummary ? ron(adsSummary.averageCpcRon) : '—',
+                  hint: 'Cost mediu per click raportat de Ads.',
+                },
+              ]}
+            />
+          </div>
+
+          <div className="border-t border-[#dce2e9] bg-white px-4 py-5 lg:px-6">
+            <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
+              <div>
+                <p className="text-xs font-extrabold uppercase tracking-[.12em] text-[#9f6504]">Traseu măsurat</p>
+                <h3 className="mt-1 text-lg font-extrabold text-[#1e344b]">Ads → site → contact</h3>
+              </div>
+              <p className="max-w-xl text-xs leading-5 text-[#718294]">
+                Nu este un funnel 1:1: Google Ads și site-ul folosesc metode diferite de atribuire, iar browserele/cookie-urile pot produce diferențe normale.
+              </p>
+            </div>
+
+            <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+              {[
+                ['Afișări Ads', adsSummary ? number(adsSummary.impressions) : '—'],
+                ['Clickuri Ads', adsSummary ? number(adsSummary.clicks) : '—'],
+                ['Sesiuni Google pe site', number(metrics.google.sessions)],
+                ['Contacte Google pe site', number(metrics.google.contactActions)],
+                ['Conversii Ads', adsSummary ? number(adsSummary.conversions, 1) : '—'],
+              ].map(([label, value], index) => (
+                <div key={String(label)} className="relative rounded-xl border border-[#dce2e9] bg-[#f8fafb] p-4">
+                  <p className="text-[11px] font-bold uppercase tracking-[.07em] text-[#718294]">{label}</p>
+                  <p className="mt-2 text-2xl font-extrabold tracking-[-.04em] text-[#132c43]">{value}</p>
+                  {index < 4 ? <span className="absolute -right-2 top-1/2 hidden -translate-y-1/2 text-[#aab6c1] lg:block" aria-hidden="true">→</span> : null}
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-4 rounded-xl border border-[#ead8ae] bg-[#fff9eb] p-4 text-sm leading-6 text-[#714b08]">
+              {adsSummary ? (
+                <>
+                  Google Ads raportează <strong>{number(adsSummary.clicks)} clickuri</strong>, iar site-ul a măsurat <strong>{number(metrics.google.sessions)} sesiuni cu sursă Google</strong> și <strong>{number(metrics.google.contactActions)} acțiuni de contact din acest trafic</strong>. Comparăm tendința, nu cerem egalitate perfectă între cifre.
+                </>
+              ) : (
+                <>
+                  Datele site-ului sunt deja active. După conectarea Google Ads, coloana din dreapta și traseul de mai sus se completează automat, fără să schimbăm din nou dashboardul.
+                </>
+              )}
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       {metrics ? (
         <>
