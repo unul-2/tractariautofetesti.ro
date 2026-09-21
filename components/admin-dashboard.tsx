@@ -442,7 +442,7 @@ export function AdminDashboard() {
       {status === 'error' ? <p className="mt-6 rounded-xl bg-[#fff1ee] p-4 text-sm font-semibold text-[#9a3412]">Datele nu au putut fi încărcate. Verifică dacă Netlify Identity și Netlify Blobs sunt activate pentru acest proiect.</p> : null}
 
       {metrics ? (
-        <section className="mt-6 overflow-hidden rounded-[1.75rem] border border-[#cfd9e3] bg-[#f4f7f9] shadow-[0_18px_50px_rgba(13,34,52,.06)]">
+        <section aria-label="Comparație site și Google Ads" className="mt-6 overflow-hidden rounded-[1.75rem] border border-[#cfd9e3] bg-[#f4f7f9] shadow-[0_18px_50px_rgba(13,34,52,.06)]">
           <div className="flex flex-col justify-between gap-3 bg-[#0b2033] px-6 py-5 text-white sm:flex-row sm:items-end">
             <div>
               <p className="text-xs font-extrabold uppercase tracking-[.14em] text-[#f6b62e]">Privire rapidă</p>
