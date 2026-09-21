@@ -53,6 +53,17 @@ const handler = async (request: Request, _context: Context) => {
     (event) => event.name === 'whatsapp_click' || event.name === 'whatsapp_location_click',
   ).length;
   const whatsappLocationClicks = events.filter((event) => event.name === 'whatsapp_location_click').length;
+  const googleEvents = events.filter((event) =>
+    (event.campaign.utm_source || '').toLowerCase().includes('google'),
+  );
+  const googleSessions = new Set(googleEvents.map((event) => event.sessionHash));
+  const googleCallClicks = googleEvents.filter((event) => event.name === 'call_click').length;
+  const googleWhatsappClicks = googleEvents.filter(
+    (event) => event.name === 'whatsapp_click' || event.name === 'whatsapp_location_click',
+  ).length;
+  const googleWhatsappLocationClicks = googleEvents.filter(
+    (event) => event.name === 'whatsapp_location_click',
+  ).length;
 
   return Response.json(
     {
@@ -64,6 +75,13 @@ const handler = async (request: Request, _context: Context) => {
         whatsappClicks,
         whatsappLocationClicks,
         callClickRate: uniqueSessions.size ? Math.round((sessionsWithCall.size / uniqueSessions.size) * 1000) / 10 : 0,
+      },
+      google: {
+        sessions: googleSessions.size,
+        callClicks: googleCallClicks,
+        whatsappClicks: googleWhatsappClicks,
+        whatsappLocationClicks: googleWhatsappLocationClicks,
+        contactActions: googleCallClicks + googleWhatsappClicks,
       },
       daily: daily(events, days),
       devices: countBy(events, (event) => event.device),
