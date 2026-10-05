@@ -1,8 +1,20 @@
 import type { Config, Context } from '@netlify/functions';
 import { getUser } from '@netlify/identity';
-import { readEvents, type StoredEvent } from '../lib/analytics';
+import {
+  readEvents,
+  type AnalyticsServiceKey,
+  type StoredEvent,
+} from '../lib/analytics';
 
 type Count = { label: string; value: number };
+
+const serviceLabels: Record<AnalyticsServiceKey, string> = {
+  towing: 'Tractare / general',
+  'mobile-service': 'Service auto mobil',
+  obd: 'Diagnoză OBD-II',
+  'vehicle-transport': 'Transport auto',
+  'equipment-transport': 'Transport utilaje',
+};
 
 function countBy(events: StoredEvent[], getLabel: (event: StoredEvent) => string): Count[] {
   const counts = new Map<string, number>();
@@ -53,6 +65,12 @@ const handler = async (request: Request, _context: Context) => {
     (event) => event.name === 'whatsapp_click' || event.name === 'whatsapp_location_click',
   ).length;
   const whatsappLocationClicks = events.filter((event) => event.name === 'whatsapp_location_click').length;
+  const contactEvents = events.filter(
+    (event) =>
+      event.name === 'call_click' ||
+      event.name === 'whatsapp_click' ||
+      event.name === 'whatsapp_location_click',
+  );
   const googleEvents = events.filter((event) =>
     (event.campaign.utm_source || '').toLowerCase().includes('google'),
   );
@@ -86,6 +104,10 @@ const handler = async (request: Request, _context: Context) => {
       daily: daily(events, days),
       devices: countBy(events, (event) => event.device),
       sources: countBy(events, (event) => event.campaign.utm_source || 'Direct / necunoscut'),
+      services: countBy(
+        contactEvents,
+        (event) => (event.service ? serviceLabels[event.service] : 'Tractare / general'),
+      ),
     },
     { headers: { 'cache-control': 'no-store' } },
   );

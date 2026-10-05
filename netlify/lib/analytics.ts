@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { getStore } from '@netlify/blobs';
+import { getDeployStore, getStore } from '@netlify/blobs';
 
 export const eventNames = [
   'page_view',
@@ -8,18 +8,40 @@ export const eventNames = [
   'whatsapp_location_click',
 ] as const;
 
+export const analyticsServiceKeys = [
+  'towing',
+  'mobile-service',
+  'obd',
+  'vehicle-transport',
+  'equipment-transport',
+] as const;
+
 export type AnalyticsEventName = (typeof eventNames)[number];
+export type AnalyticsServiceKey = (typeof analyticsServiceKeys)[number];
 
 export type StoredEvent = {
   campaign: Record<string, string>;
   device: 'desktop' | 'mobile' | 'tablet' | 'other';
   name: AnalyticsEventName;
   path: string;
+  service?: AnalyticsServiceKey;
   sessionHash: string;
   storedAt: string;
 };
 
 const storeName = 'tractari-site-analytics';
+
+function analyticsStore() {
+  const netlify = (
+    globalThis as typeof globalThis & {
+      Netlify?: { context?: { deploy?: { context?: string } } };
+    }
+  ).Netlify;
+
+  return netlify?.context?.deploy?.context === 'production'
+    ? getStore(storeName)
+    : getDeployStore(storeName);
+}
 
 function utcDay(date = new Date()) {
   return date.toISOString().slice(0, 10);
@@ -38,13 +60,13 @@ export function deviceFromUserAgent(value: string | null): StoredEvent['device']
 }
 
 export async function writeEvent(event: StoredEvent) {
-  const store = getStore(storeName);
+  const store = analyticsStore();
   const key = `events/${utcDay()}/${event.storedAt}-${randomUUID()}.json`;
   await store.setJSON(key, event);
 }
 
 export async function readEvents(days: number) {
-  const store = getStore(storeName);
+  const store = analyticsStore();
   const keys: string[] = [];
   const today = new Date();
 

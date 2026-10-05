@@ -22,6 +22,7 @@ import {
   WhatsAppLocationButton,
 } from '@/components/conversion-links';
 import { GoogleReviews } from '@/components/google-reviews';
+import { ServiceHub } from '@/components/service-hub';
 
 type Language = 'ro' | 'en';
 
@@ -569,6 +570,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <ServiceHub language={language} />
 
       <section className="bg-[#081a29] py-20 text-white sm:py-24 lg:py-28">
         <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">

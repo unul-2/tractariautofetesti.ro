@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://www.tractariautofetesti.ro'),
   title: 'Tractări Auto Fetești | Asistență rutieră non-stop',
   description:
-    'Tractare auto și asistență rutieră pentru Fetești, A2 și zona de acoperire confirmată telefonic.',
+    'Tractare auto, asistență rutieră, service auto mobil, diagnoză OBD-II și transport auto/utilaje pentru Fetești și zona confirmată telefonic.',
   openGraph: {
     type: 'website',
     locale: 'ro_RO',
@@ -56,7 +56,7 @@ const organizationSchema = {
   },
   openingHours: 'Mo-Su 00:00-23:59',
   description:
-    'Tractare auto și asistență rutieră cu punct de plecare din Fetești, în mod uzual pe o rază de aproximativ 40–50 km; distanțele mai mari se confirmă telefonic.',
+    'Tractare auto, asistență rutieră, service auto mobil, diagnoză OBD-II și transport auto/utilaje cu punct de plecare din Fetești. Disponibilitatea și aria fiecărui serviciu se confirmă telefonic.',
 };
 
 export default function RootLayout({

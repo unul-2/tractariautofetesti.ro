@@ -8,6 +8,13 @@ export type SiteEventName =
   | 'whatsapp_click'
   | 'whatsapp_location_click';
 
+export type ServiceAnalyticsKey =
+  | 'towing'
+  | 'mobile-service'
+  | 'obd'
+  | 'vehicle-transport'
+  | 'equipment-transport';
+
 const consentKey = 'taf-cookie-consent-v1';
 const sessionKey = 'taf-analytics-session-v1';
 const allowedCampaignKeys = ['utm_source', 'utm_medium', 'utm_campaign'] as const;
@@ -43,11 +50,12 @@ function campaignContext() {
   );
 }
 
-export function trackSiteEvent(name: SiteEventName) {
+export function trackSiteEvent(name: SiteEventName, service?: ServiceAnalyticsKey) {
   if (typeof window === 'undefined' || !hasMarketingConsent()) return;
 
   const body = JSON.stringify({
     name,
+    service,
     sessionId: getSessionId(),
     path: window.location.pathname,
     campaign: campaignContext(),
