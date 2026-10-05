@@ -1,9 +1,11 @@
 import type { Config, Context } from '@netlify/functions';
 import {
+  analyticsServiceKeys,
   deviceFromUserAgent,
   eventNames,
   hashSession,
   type AnalyticsEventName,
+  type AnalyticsServiceKey,
   writeEvent,
 } from '../lib/analytics';
 
@@ -28,6 +30,12 @@ function safeCampaign(value: unknown) {
         : [];
     }),
   );
+}
+
+function safeService(value: unknown): AnalyticsServiceKey | undefined {
+  return analyticsServiceKeys.includes(value as AnalyticsServiceKey)
+    ? (value as AnalyticsServiceKey)
+    : undefined;
 }
 
 function validSession(value: unknown): value is string {
@@ -75,6 +83,7 @@ const handler = async (request: Request, _context: Context) => {
     device: deviceFromUserAgent(request.headers.get('user-agent')),
     name: payload.name as AnalyticsEventName,
     path: payload.path,
+    service: safeService(payload.service),
     sessionHash: hashSession(payload.sessionId),
     storedAt: new Date().toISOString(),
   });
