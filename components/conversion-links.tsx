@@ -1,7 +1,10 @@
 'use client';
 
 import type { AnchorHTMLAttributes } from 'react';
-import { trackSiteEvent } from '@/components/site-analytics';
+import {
+  trackSiteEvent,
+  type ServiceAnalyticsKey,
+} from '@/components/site-analytics';
 
 const phoneNumber = '0723 511 865';
 const phoneHref = 'tel:+40723511865';
@@ -21,11 +24,13 @@ function trackConversion(label: string | undefined) {
 
 type PhoneLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
   conversionLabel?: string;
+  service?: ServiceAnalyticsKey;
 };
 
 export function PhoneLink({
   children,
   conversionLabel = process.env.NEXT_PUBLIC_GOOGLE_ADS_CALL_LABEL,
+  service = 'towing',
   onClick,
   ...props
 }: PhoneLinkProps) {
@@ -34,7 +39,7 @@ export function PhoneLink({
       {...props}
       href={phoneHref}
       onClick={(event) => {
-        trackSiteEvent('call_click');
+        trackSiteEvent('call_click', service);
         trackConversion(conversionLabel);
         onClick?.(event);
       }}
@@ -48,21 +53,32 @@ type WhatsAppLocationButtonProps = {
   className?: string;
   children: React.ReactNode;
   conversionLabel?: string;
+  service?: ServiceAnalyticsKey;
+  serviceLabel?: string;
 };
 
 export function WhatsAppLocationButton({
   className,
   children,
   conversionLabel = process.env.NEXT_PUBLIC_GOOGLE_ADS_WHATSAPP_LABEL,
+  service = 'towing',
+  serviceLabel,
 }: WhatsAppLocationButtonProps) {
   const openWhatsApp = (locationText?: string) => {
+    const request = serviceLabel
+      ? `Bună ziua! Am nevoie de informații pentru: ${serviceLabel}.`
+      : 'Bună ziua! Am nevoie de tractare auto.';
+
     const message = [
-      'Bună ziua! Am nevoie de tractare auto.',
+      request,
       locationText ?? 'Îmi pot spune poziția mea după ce vorbim.',
       'Vă rog să-mi confirmați disponibilitatea, timpul estimat și costul.',
     ].join('\n');
 
-    trackSiteEvent(locationText ? 'whatsapp_location_click' : 'whatsapp_click');
+    trackSiteEvent(
+      locationText ? 'whatsapp_location_click' : 'whatsapp_click',
+      service,
+    );
     trackConversion(conversionLabel);
     window.open(
       `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`,
