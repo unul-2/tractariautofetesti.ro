@@ -21,6 +21,7 @@ type Metrics = {
   };
   devices: { label: string; value: number }[];
   sources: { label: string; value: number }[];
+  services: { label: string; value: number }[];
 };
 
 type GoogleAdsPayload = {
@@ -109,6 +110,13 @@ const demoMetrics: Metrics = {
     { label: 'google', value: 48 },
     { label: 'Direct / necunoscut', value: 31 },
     { label: 'facebook', value: 7 },
+  ],
+  services: [
+    { label: 'Tractare / general', value: 20 },
+    { label: 'Diagnoză OBD-II', value: 4 },
+    { label: 'Service auto mobil', value: 3 },
+    { label: 'Transport auto', value: 2 },
+    { label: 'Transport utilaje', value: 1 },
   ],
 };
 
@@ -592,9 +600,10 @@ export function AdminDashboard() {
             <p className="mt-2 text-4xl font-extrabold tracking-[-.05em]">{metrics.summary.callClickRate}%</p>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-white/75">Procentul sesiunilor măsurate care au apăsat butonul „Sună”. Nu reprezintă apeluri confirmate și nu trebuie confundat cu conversiile Google Ads.</p>
           </section>
-          <div className="mt-5 grid gap-5 lg:grid-cols-2">
+          <div className="mt-5 grid gap-5 lg:grid-cols-2 xl:grid-cols-3">
             <Breakdown title="Dispozitive" values={metrics.devices} />
             <Breakdown title="Sursa accesărilor" values={metrics.sources} />
+            <Breakdown title="Acțiuni de contact pe serviciu" values={metrics.services} />
           </div>
         </>
       ) : null}
