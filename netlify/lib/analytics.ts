@@ -8,13 +8,23 @@ export const eventNames = [
   'whatsapp_location_click',
 ] as const;
 
+export const analyticsServiceKeys = [
+  'towing',
+  'mobile-service',
+  'obd',
+  'vehicle-transport',
+  'equipment-transport',
+] as const;
+
 export type AnalyticsEventName = (typeof eventNames)[number];
+export type AnalyticsServiceKey = (typeof analyticsServiceKeys)[number];
 
 export type StoredEvent = {
   campaign: Record<string, string>;
   device: 'desktop' | 'mobile' | 'tablet' | 'other';
   name: AnalyticsEventName;
   path: string;
+  service?: AnalyticsServiceKey;
   sessionHash: string;
   storedAt: string;
 };
