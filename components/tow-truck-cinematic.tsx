@@ -19,7 +19,9 @@ export function TowTruckCinematic() {
     const destination = document.getElementById('sosire');
     const footer = page?.querySelector('footer');
     const overlay = truck?.parentElement;
-    if (!truck || !page || !destination || !footer || !overlay) return;
+    const turningTruck = truck?.querySelector<HTMLElement>('.cinematic-vehicle-turn');
+    const frontPhoto = destination?.querySelector<HTMLElement>('.cinematic-arrival-front');
+    if (!truck || !page || !destination || !footer || !overlay || !turningTruck || !frontPhoto) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     gsap.registerPlugin(ScrollTrigger);
@@ -98,6 +100,44 @@ export function TowTruckCinematic() {
             duration: 0.19,
           });
 
+        // Photographic match-cut: the outgoing rear view turns edge-on as the
+        // real Iveco front photograph appears in the final scene.
+        // Animate the inner layer so the long-running journey timeline keeps
+        // exclusive control of the vehicle's world position.
+        const turn = gsap.fromTo(
+          turningTruck,
+          { rotationY: 0, autoAlpha: 1 },
+          {
+            rotationY: compact ? -76 : -82,
+            autoAlpha: 0,
+            ease: 'power1.inOut',
+            scrollTrigger: {
+              trigger: destination,
+              start: 'top 86%',
+              end: 'top 29%',
+              scrub: compact ? 0.35 : 0.6,
+              invalidateOnRefresh: true,
+            },
+          },
+        );
+
+        const frontReveal = gsap.fromTo(
+          frontPhoto,
+          { autoAlpha: 0, scale: compact ? 1.09 : 1.12 },
+          {
+            autoAlpha: 1,
+            scale: 1,
+            ease: 'power1.inOut',
+            scrollTrigger: {
+              trigger: destination,
+              start: 'top 83%',
+              end: 'top 26%',
+              scrub: compact ? 0.35 : 0.6,
+              invalidateOnRefresh: true,
+            },
+          },
+        );
+
         // Let the vehicle finish its close-up in the destination scene, not
         // over legal links and footer content.
         const exit = gsap.fromTo(
@@ -117,8 +157,10 @@ export function TowTruckCinematic() {
         );
 
         return () => {
-          exit.kill();
+          frontReveal.kill();
+          turn.kill();
           sequence.kill();
+          exit.kill();
         };
       },
     );
@@ -129,17 +171,19 @@ export function TowTruckCinematic() {
   return (
     <div className="cinematic-vehicle" aria-hidden="true">
       <div ref={vehicleRef} className="cinematic-vehicle-stage">
-        <div className="cinematic-vehicle-halo" />
-        <div className="cinematic-vehicle-trail" />
-        <Image
-          src="/tow-truck-cutout.webp"
-          alt=""
-          width={996}
-          height={509}
-          sizes="(max-width: 767px) 82vw, 46vw"
-          className="cinematic-vehicle-image"
-          draggable={false}
-        />
+        <div className="cinematic-vehicle-turn">
+          <div className="cinematic-vehicle-halo" />
+          <div className="cinematic-vehicle-trail" />
+          <Image
+            src="/tow-truck-cutout.webp"
+            alt=""
+            width={996}
+            height={509}
+            sizes="(max-width: 767px) 82vw, 46vw"
+            className="cinematic-vehicle-image"
+            draggable={false}
+          />
+        </div>
       </div>
     </div>
   );

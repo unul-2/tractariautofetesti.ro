@@ -742,6 +742,16 @@ export default function Home() {
         className="cinematic-arrival relative min-h-[370px] overflow-hidden bg-[#051523] py-20 text-white sm:min-h-[560px] sm:py-28"
         aria-label={language === 'ro' ? 'Finalul traseului' : 'End of the journey'}
       >
+        <div className="cinematic-arrival-front absolute inset-0 z-[1]" aria-hidden="true">
+          <Image
+            src="/tow-truck-front.webp"
+            alt=""
+            fill
+            sizes="100vw"
+            className="cinematic-arrival-front-image object-cover"
+          />
+        </div>
+        <div className="cinematic-arrival-front-scrim absolute inset-0 z-[2]" aria-hidden="true" />
         <div className="cinematic-arrival-grid absolute inset-0" aria-hidden="true" />
         <div className="cinematic-arrival-horizon absolute inset-x-0 bottom-0 h-1/2" aria-hidden="true" />
         <div className="relative z-20 mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
