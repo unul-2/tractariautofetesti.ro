@@ -42,3 +42,17 @@ reduced motion, small viewport and slow mobile connection.
 - Mobile has reduced opacity/scale and retains native touch scrolling;
   reduced-motion preferences disable the moving image.
 - `/admin`, conversion links, cookie consent and tracking remain unchanged.
+
+
+## Real front photograph + cinematic turn (2026-10-11)
+
+The real front/three-quarter photograph of the Iveco flatbed on the existing
+business website (https://tractariautofetesti.ro/hero-truck.webp) is stored
+locally as public/tow-truck-front.webp. The file is the original asset,
+not generated and not loaded from a third-party origin at runtime.
+
+In the final arrival scene the earlier rear cutout rotates out in perspective
+and the authentic front view fades in with a subtle zoom. Mobile uses a
+bottom-weighted composition, with the headline fully readable above it.
+Reduced-motion users see the front photograph without the transition.
+No changes to /admin, phone links, Google Ads or analytics.

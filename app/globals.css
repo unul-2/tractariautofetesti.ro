@@ -631,3 +631,61 @@ a {
 @media (prefers-reduced-motion: reduce) {
   .cinematic-vehicle { display: none; }
 }
+
+/* Authentic front-on Iveco photo from the original tractariautofetesti.ro site.
+   A perspective match-cut bridges the original rear towing scene. */
+.cinematic-vehicle-stage {
+  perspective: 1050px;
+}
+
+.cinematic-vehicle-turn {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-origin: 52% 50%;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+
+.cinematic-arrival-front {
+  pointer-events: none;
+  transform-origin: 72% 50%;
+  will-change: opacity, transform;
+}
+
+.cinematic-arrival-front-image {
+  object-position: center 49%;
+  filter: saturate(.78) brightness(.69) contrast(1.12);
+}
+
+.cinematic-arrival-front-scrim {
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, #071827 0%, rgba(7,24,39,.97) 25%,
+      rgba(7,24,39,.65) 48%, rgba(7,24,39,.05) 80%),
+    linear-gradient(0deg, rgba(4,15,26,.72), transparent 27%, transparent 76%, rgba(4,15,26,.2));
+}
+
+@media (max-width: 767px) {
+  .cinematic-arrival-front {
+    top: 35%;
+    transform-origin: 68% 70%;
+  }
+
+  .cinematic-arrival-front-image {
+    object-position: 62% center;
+    filter: saturate(.85) brightness(.7) contrast(1.08);
+  }
+
+  .cinematic-arrival-front-scrim {
+    background:
+      linear-gradient(180deg, #071827 0%, rgba(7,24,39,.97) 33%,
+        rgba(7,24,39,.28) 72%, rgba(7,24,39,.62) 100%),
+      linear-gradient(90deg, rgba(7,24,39,.18), transparent 75%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cinematic-arrival-front { opacity: 1 !important; transform: none !important; }
+}
