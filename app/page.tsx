@@ -23,6 +23,7 @@ import {
 } from '@/components/conversion-links';
 import { GoogleReviews } from '@/components/google-reviews';
 import { ServiceHub } from '@/components/service-hub';
+import { VisualMotion } from '@/components/visual-motion';
 
 type Language = 'ro' | 'en';
 
@@ -334,7 +335,8 @@ export default function Home() {
   };
 
   return (
-    <main className="overflow-x-clip bg-[#f4f6f8] text-[#102235]">
+    <main data-motion-root className="visual-site overflow-x-clip bg-[#f4f6f8] text-[#102235]">
+      <VisualMotion />
       <section
         ref={heroRef}
         id="sus"
@@ -342,6 +344,7 @@ export default function Home() {
       >
         <Image
           src="/hero-tow-truck.png"
+          data-motion-image
           alt={
             language === 'ro'
               ? 'Platformă de tractare care transportă în siguranță un autoturism pe autostradă'
@@ -426,7 +429,7 @@ export default function Home() {
 
         <div className="relative z-10 mx-auto grid max-w-7xl gap-10 px-5 pb-24 pt-14 sm:px-8 sm:pb-28 sm:pt-24 lg:grid-cols-[1.12fr_.88fr] lg:items-end lg:px-10 lg:pb-24 lg:pt-32">
           <div className="hero-copy max-w-3xl">
-            <div className="mb-6 flex flex-wrap items-center gap-2">
+            <div data-motion-intro className="mb-6 flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-2 rounded-full border border-[#f6a817]/35 bg-[#f6a817]/12 px-3 py-1.5 text-xs font-black uppercase tracking-[.12em] text-[#ffd36f]">
                 <span className="status-pulse h-2 w-2 rounded-full bg-[#f6a817]" />
                 {t.availability}
@@ -440,17 +443,17 @@ export default function Home() {
               </a>
             </div>
 
-            <h1 className="max-w-3xl text-[2.45rem] font-black leading-[.96] tracking-[-.058em] text-balance min-[390px]:text-[2.7rem] sm:text-6xl lg:text-[5.35rem]">
+            <h1 data-motion-intro className="max-w-3xl text-[2.45rem] font-black leading-[.96] tracking-[-.058em] text-balance min-[390px]:text-[2.7rem] sm:text-6xl lg:text-[5.35rem]">
               {t.heroLine1}
               <span className="block text-[#f6a817]">{t.heroLine2}</span>
               {t.heroLine3}
             </h1>
 
-            <p className="mt-5 max-w-2xl text-[15px] font-medium leading-6 text-white/72 sm:mt-7 sm:text-lg sm:leading-8">
+            <p data-motion-intro className="mt-5 max-w-2xl text-[15px] font-medium leading-6 text-white/72 sm:mt-7 sm:text-lg sm:leading-8">
               {t.heroCopy}
             </p>
 
-            <div className="mt-7 grid grid-cols-[1.12fr_.88fr] gap-2.5 sm:mt-9 sm:flex sm:flex-row sm:gap-3">
+            <div data-motion-intro className="mt-7 grid grid-cols-[1.12fr_.88fr] gap-2.5 sm:mt-9 sm:flex sm:flex-row sm:gap-3">
               <PhoneLink className="cta-primary group inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-[#f6a817] px-3 text-sm font-black text-[#071827] shadow-[0_18px_55px_rgba(246,168,23,.22)] transition hover:-translate-y-0.5 hover:bg-[#ffc451] sm:min-h-16 sm:gap-3 sm:px-6 sm:text-base">
                 <Phone className="h-5 w-5" aria-hidden="true" />
                 <span>{t.callNow}</span>
@@ -465,7 +468,7 @@ export default function Home() {
               </WhatsAppLocationButton>
             </div>
 
-            <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-xs font-semibold text-white/60 sm:mt-7 sm:gap-x-7 sm:gap-y-3 sm:text-sm">
+            <div data-motion-intro className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-xs font-semibold text-white/60 sm:mt-7 sm:gap-x-7 sm:gap-y-3 sm:text-sm">
               <span className="inline-flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-[#ffd36f]" aria-hidden="true" />
                 {t.safePickup}
@@ -477,7 +480,7 @@ export default function Home() {
             </div>
           </div>
 
-          <aside className="hero-panel hidden overflow-hidden rounded-[2rem] border border-white/13 bg-[#071827]/76 p-5 shadow-[0_28px_80px_rgba(0,0,0,.32)] backdrop-blur-xl lg:block">
+          <aside data-motion-intro className="hero-panel hidden overflow-hidden rounded-[2rem] border border-white/13 bg-[#071827]/76 p-5 shadow-[0_28px_80px_rgba(0,0,0,.32)] backdrop-blur-xl lg:block">
             <div className="rounded-[1.55rem] border border-white/10 bg-white/[.045] p-6">
               <div className="flex items-center justify-between gap-4">
                 <div>
@@ -610,7 +613,7 @@ export default function Home() {
 
       <section id="acoperire" className="scroll-mt-24 py-20 sm:py-24 lg:py-28">
         <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
-          <div className="coverage-shell overflow-hidden rounded-[2rem] border border-[#d6dfe7] bg-white shadow-[0_24px_65px_rgba(13,34,52,.06)]">
+          <div data-motion-reveal className="coverage-shell overflow-hidden rounded-[2rem] border border-[#d6dfe7] bg-white shadow-[0_24px_65px_rgba(13,34,52,.06)]">
             <div className="grid lg:grid-cols-[.88fr_1.12fr]">
               <div className="p-7 sm:p-10 lg:p-12">
                 <p className="section-kicker">{t.coverageKicker}</p>
@@ -677,7 +680,7 @@ export default function Home() {
 
       <section id="contact" className="scroll-mt-24 bg-[#071827] py-20 text-white sm:py-24 lg:py-28">
         <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
-          <div className="contact-panel relative overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(125deg,#0e2a42,#081724)] p-7 sm:p-10 lg:p-12">
+          <div data-motion-reveal className="contact-panel relative overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(125deg,#0e2a42,#081724)] p-7 sm:p-10 lg:p-12">
             <div className="contact-glow absolute -right-28 -top-28 h-80 w-80 rounded-full bg-[#f6a817]/18 blur-3xl" aria-hidden="true" />
             <div className="relative z-10 grid gap-10 lg:grid-cols-[1fr_.75fr] lg:items-end">
               <div>
@@ -717,7 +720,7 @@ export default function Home() {
           <h2 className="section-title mx-auto max-w-2xl">{t.faqTitle}</h2>
         </div>
 
-        <div className="mt-10 divide-y divide-[#dce2e9] overflow-hidden rounded-[1.6rem] border border-[#dce2e9] bg-white shadow-[0_16px_45px_rgba(13,34,52,.05)]">
+        <div data-motion-reveal className="mt-10 divide-y divide-[#dce2e9] overflow-hidden rounded-[1.6rem] border border-[#dce2e9] bg-white shadow-[0_16px_45px_rgba(13,34,52,.05)]">
           {t.faqs.map((faq) => (
             <details key={faq.question} className="faq-row group px-6 py-5 sm:px-8">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-6 text-left text-base font-black text-[#1e344b]">
