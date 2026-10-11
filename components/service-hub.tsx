@@ -43,7 +43,7 @@ export function ServiceHub({ language }: { language: Language }) {
               <Link
                 key={key}
                 href={service.href}
-                className="group relative overflow-hidden rounded-[1.6rem] border border-[#d5dee6] bg-white p-6 shadow-[0_14px_42px_rgba(13,34,52,.05)] transition hover:-translate-y-1 hover:border-[#c3ced8] hover:shadow-[0_20px_52px_rgba(13,34,52,.09)] sm:p-7"
+                className="service-hub-card group relative overflow-hidden rounded-[1.6rem] border border-[#d5dee6] bg-white p-6 shadow-[0_14px_42px_rgba(13,34,52,.05)] transition hover:-translate-y-1 hover:border-[#c3ced8] hover:shadow-[0_20px_52px_rgba(13,34,52,.09)] sm:p-7"
               >
                 <div className="flex items-start justify-between gap-5">
                   <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#0b2235] text-[#ffd36f] transition group-hover:bg-[#f6a817] group-hover:text-[#071827]">
