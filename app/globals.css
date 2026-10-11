@@ -540,3 +540,94 @@ a {
   .visual-scroll-progress { display: none; }
   .visual-site .hero-copy h1 span { background: none; color: #f6a817; }
 }
+
+/* Scroll-driven recovery vehicle: no controls, composited on its own layer. */
+.cinematic-vehicle {
+  position: fixed;
+  inset: 0;
+  z-index: 12;
+  overflow: hidden;
+  pointer-events: none;
+  contain: layout style;
+}
+
+.cinematic-vehicle-stage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: min(46vw, 740px);
+  aspect-ratio: 996 / 509;
+  opacity: 0;
+  visibility: hidden;
+  transform-origin: 50% 50%;
+  will-change: transform, opacity;
+}
+
+.cinematic-vehicle-image {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+  filter: drop-shadow(0 28px 38px rgba(0, 0, 0, .28));
+}
+
+.cinematic-vehicle-halo {
+  position: absolute;
+  z-index: 0;
+  inset: -22% -15%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(255,180,50,.28), rgba(255,180,50,.08) 44%, transparent 72%);
+  filter: blur(18px);
+}
+
+.cinematic-vehicle-trail {
+  position: absolute;
+  z-index: 1;
+  top: 51%;
+  right: 72%;
+  width: 100%;
+  height: 29%;
+  opacity: .45;
+  transform: skewY(-10deg);
+  background: repeating-linear-gradient(
+    0deg, transparent 0 16px, rgba(246,168,23,.18) 16px 18px, transparent 18px 32px
+  );
+  -webkit-mask-image: linear-gradient(90deg, transparent 8%, #000 100%);
+  mask-image: linear-gradient(90deg, transparent 8%, #000 100%);
+}
+
+.cinematic-arrival {
+  background-image:
+    radial-gradient(ellipse at 85% 72%, rgba(246,168,23,.20), transparent 46%),
+    linear-gradient(160deg, #071827 4%, #0b253a 74%, #020c15);
+}
+
+.cinematic-arrival-grid {
+  background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size: 64px 64px;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 80%);
+  mask-image: linear-gradient(to bottom, transparent, #000 80%);
+}
+
+.cinematic-arrival-horizon {
+  background:
+    linear-gradient(178deg, transparent 37%, rgba(246,168,23,.16) 38%, transparent 39%),
+    linear-gradient(0deg, rgba(0,0,0,.56), transparent 80%);
+}
+
+@media (max-width: 767px) {
+  .cinematic-vehicle-stage { width: min(82vw, 420px); }
+  .cinematic-vehicle-image { filter: drop-shadow(0 16px 22px rgba(0,0,0,.2)); }
+  .cinematic-vehicle-halo { filter: blur(9px); opacity: .6; }
+  .cinematic-vehicle-trail { opacity: .18; }
+  .cinematic-arrival { min-height: 600px; padding-bottom: 230px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cinematic-vehicle { display: none; }
+}

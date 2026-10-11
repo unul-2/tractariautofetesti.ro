@@ -24,6 +24,7 @@ import {
 import { GoogleReviews } from '@/components/google-reviews';
 import { ServiceHub } from '@/components/service-hub';
 import { VisualMotion } from '@/components/visual-motion';
+import { TowTruckCinematic } from '@/components/tow-truck-cinematic';
 
 type Language = 'ro' | 'en';
 
@@ -337,6 +338,7 @@ export default function Home() {
   return (
     <main data-motion-root className="visual-site overflow-x-clip bg-[#f4f6f8] text-[#102235]">
       <VisualMotion />
+      <TowTruckCinematic />
       <section
         ref={heroRef}
         id="sus"
@@ -732,6 +734,31 @@ export default function Home() {
               <p className="max-w-3xl pt-3 pr-12 text-sm leading-6 text-[#607183]">{faq.answer}</p>
             </details>
           ))}
+        </div>
+      </section>
+
+      <section
+        id="sosire"
+        className="cinematic-arrival relative min-h-[370px] overflow-hidden bg-[#051523] py-20 text-white sm:min-h-[560px] sm:py-28"
+        aria-label={language === 'ro' ? 'Finalul traseului' : 'End of the journey'}
+      >
+        <div className="cinematic-arrival-grid absolute inset-0" aria-hidden="true" />
+        <div className="cinematic-arrival-horizon absolute inset-x-0 bottom-0 h-1/2" aria-hidden="true" />
+        <div className="relative z-20 mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
+          <p className="text-xs font-black uppercase tracking-[.2em] text-[#ffd36f]">
+            {language === 'ro' ? 'Fetești · A2 · Asistență rutieră' : 'Fetești · A2 · Roadside assistance'}
+          </p>
+          <h2 className="mt-5 max-w-[660px] text-4xl font-black leading-[.98] tracking-[-.055em] sm:text-6xl lg:text-7xl">
+            {language === 'ro' ? 'Drumul merge ' : 'The road '}
+            <span className="text-[#f6a817]">
+              {language === 'ro' ? 'mai departe.' : 'continues.'}
+            </span>
+          </h2>
+          <p className="mt-7 max-w-[430px] text-base leading-7 text-white/65">
+            {language === 'ro'
+              ? 'De la primul apel până la destinația stabilită, ne ocupăm de transportul confirmat împreună.'
+              : 'From the first call to the agreed destination, we organize the transport confirmed with you.'}
+          </p>
         </div>
       </section>
 
