@@ -56,3 +56,14 @@ and the authentic front view fades in with a subtle zoom. Mobile uses a
 bottom-weighted composition, with the headline fully readable above it.
 Reduced-motion users see the front photograph without the transition.
 No changes to /admin, phone links, Google Ads or analytics.
+
+
+## Clean cinematic arrival — 2026-10-12
+
+Previous full-page floating truck and faux perspective turning were removed due to
+poor visual quality. A single opaque photograph of the original Iveco truck is
+now presented in a dedicated premium scene with an on-scroll reveal and modest
+camera zoom; no transparency or ghost effect. No fixed decorative overlays,
+all phone/WhatsApp CTA hit targets remain unobstructed, /admin and Google Ads
+tracking remain untouched. All motion respects reduced-motion preferences.
+The real Iveco photograph is retained locally as public/tow-truck-front.webp.

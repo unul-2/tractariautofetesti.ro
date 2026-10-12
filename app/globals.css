@@ -541,151 +541,66 @@ a {
   .visual-site .hero-copy h1 span { background: none; color: #f6a817; }
 }
 
-/* Scroll-driven recovery vehicle: no controls, composited on its own layer. */
-.cinematic-vehicle {
-  position: fixed;
-  inset: 0;
-  z-index: 12;
-  overflow: hidden;
-  pointer-events: none;
-  contain: layout style;
-}
 
-.cinematic-vehicle-stage {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: min(46vw, 740px);
-  aspect-ratio: 996 / 509;
-  opacity: 0;
-  visibility: hidden;
-  transform-origin: 50% 50%;
-  will-change: transform, opacity;
-}
-
-.cinematic-vehicle-image {
-  position: relative;
-  z-index: 2;
-  display: block;
-  width: 100%;
-  height: auto;
-  user-select: none;
-  -webkit-user-drag: none;
-  filter: drop-shadow(0 28px 38px rgba(0, 0, 0, .28));
-}
-
-.cinematic-vehicle-halo {
-  position: absolute;
-  z-index: 0;
-  inset: -22% -15%;
-  border-radius: 50%;
-  background: radial-gradient(ellipse, rgba(255,180,50,.28), rgba(255,180,50,.08) 44%, transparent 72%);
-  filter: blur(18px);
-}
-
-.cinematic-vehicle-trail {
-  position: absolute;
-  z-index: 1;
-  top: 51%;
-  right: 72%;
-  width: 100%;
-  height: 29%;
-  opacity: .45;
-  transform: skewY(-10deg);
-  background: repeating-linear-gradient(
-    0deg, transparent 0 16px, rgba(246,168,23,.18) 16px 18px, transparent 18px 32px
-  );
-  -webkit-mask-image: linear-gradient(90deg, transparent 8%, #000 100%);
-  mask-image: linear-gradient(90deg, transparent 8%, #000 100%);
-}
-
+/* Single contained cinematic feature: the actual company truck is shown
+   fully opaque, with no fixed floating overlay or fake 3D turn. */
 .cinematic-arrival {
   background-image:
-    radial-gradient(ellipse at 85% 72%, rgba(246,168,23,.20), transparent 46%),
-    linear-gradient(160deg, #071827 4%, #0b253a 74%, #020c15);
+    radial-gradient(ellipse at 82% 20%, rgba(246, 168, 23, .12), transparent 44%),
+    linear-gradient(135deg, #04111e 0%, #102b41 55%, #061827 100%);
 }
 
-.cinematic-arrival-grid {
-  background-image:
-    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
-  background-size: 64px 64px;
-  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 80%);
-  mask-image: linear-gradient(to bottom, transparent, #000 80%);
-}
-
-.cinematic-arrival-horizon {
+.cinematic-arrival-ambient {
+  pointer-events: none;
   background:
-    linear-gradient(178deg, transparent 37%, rgba(246,168,23,.16) 38%, transparent 39%),
-    linear-gradient(0deg, rgba(0,0,0,.56), transparent 80%);
+    linear-gradient(130deg, transparent 58%, rgba(246, 168, 23, .08) 58.2%, transparent 58.5%),
+    repeating-linear-gradient(90deg, transparent 0 104px, rgba(255, 255, 255, .02) 104px 105px);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 32%, black 84%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, black 32%, black 84%, transparent);
 }
 
-@media (max-width: 767px) {
-  .cinematic-vehicle-stage { width: min(82vw, 420px); }
-  .cinematic-vehicle-image { filter: drop-shadow(0 16px 22px rgba(0,0,0,.2)); }
-  .cinematic-vehicle-halo { filter: blur(9px); opacity: .6; }
-  .cinematic-vehicle-trail { opacity: .18; }
-  .cinematic-arrival { min-height: 600px; padding-bottom: 230px; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .cinematic-vehicle { display: none; }
-}
-
-/* Authentic front-on Iveco photo from the original tractariautofetesti.ro site.
-   A perspective match-cut bridges the original rear towing scene. */
-.cinematic-vehicle-stage {
-  perspective: 1050px;
-}
-
-.cinematic-vehicle-turn {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transform-origin: 52% 50%;
-  transform-style: preserve-3d;
+.cinematic-arrival-frame {
+  isolation: isolate;
+  transform-origin: center center;
+  -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  will-change: transform, opacity;
 }
 
-.cinematic-arrival-front {
-  pointer-events: none;
-  transform-origin: 72% 50%;
-  will-change: opacity, transform;
+.cinematic-arrival-picture {
+  transform: scale(1);
+  transform-origin: 56% 55%;
+  will-change: transform;
 }
 
-.cinematic-arrival-front-image {
-  object-position: center 49%;
-  filter: saturate(.78) brightness(.69) contrast(1.12);
+.cinematic-arrival-image {
+  object-position: 58% 52%;
+  filter: saturate(1.05) contrast(1.04);
 }
 
-.cinematic-arrival-front-scrim {
+.cinematic-arrival-photo-grade {
   pointer-events: none;
   background:
-    linear-gradient(90deg, #071827 0%, rgba(7,24,39,.97) 25%,
-      rgba(7,24,39,.65) 48%, rgba(7,24,39,.05) 80%),
-    linear-gradient(0deg, rgba(4,15,26,.72), transparent 27%, transparent 76%, rgba(4,15,26,.2));
+    linear-gradient(0deg, rgba(4, 17, 31, .28), transparent 46%),
+    linear-gradient(90deg, rgba(4, 17, 31, .1), transparent 65%);
+}
+
+.cinematic-arrival-light {
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-120%) skewX(-24deg);
+  background: linear-gradient(90deg, transparent 38%, rgba(255, 226, 156, .25) 50%, transparent 63%);
+  mix-blend-mode: screen;
 }
 
 @media (max-width: 767px) {
-  .cinematic-arrival-front {
-    top: 35%;
-    transform-origin: 68% 70%;
-  }
-
-  .cinematic-arrival-front-image {
-    object-position: 62% center;
-    filter: saturate(.85) brightness(.7) contrast(1.08);
-  }
-
-  .cinematic-arrival-front-scrim {
-    background:
-      linear-gradient(180deg, #071827 0%, rgba(7,24,39,.97) 33%,
-        rgba(7,24,39,.28) 72%, rgba(7,24,39,.62) 100%),
-      linear-gradient(90deg, rgba(7,24,39,.18), transparent 75%);
-  }
+  .cinematic-arrival-image { object-position: 58% 50%; }
+  .cinematic-arrival-picture { transform-origin: 59% 50%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cinematic-arrival-front { opacity: 1 !important; transform: none !important; }
+  .cinematic-arrival-frame, .cinematic-arrival-picture, .cinematic-arrival-copy {
+    transform: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
 }
