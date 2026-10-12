@@ -24,7 +24,7 @@ import {
 import { GoogleReviews } from '@/components/google-reviews';
 import { ServiceHub } from '@/components/service-hub';
 import { VisualMotion } from '@/components/visual-motion';
-import { TowTruckCinematic } from '@/components/tow-truck-cinematic';
+import { ArrivalMotion } from '@/components/arrival-motion';
 
 type Language = 'ro' | 'en';
 
@@ -338,7 +338,7 @@ export default function Home() {
   return (
     <main data-motion-root className="visual-site overflow-x-clip bg-[#f4f6f8] text-[#102235]">
       <VisualMotion />
-      <TowTruckCinematic />
+
       <section
         ref={heroRef}
         id="sus"
@@ -739,36 +739,58 @@ export default function Home() {
 
       <section
         id="sosire"
-        className="cinematic-arrival relative min-h-[370px] overflow-hidden bg-[#051523] py-20 text-white sm:min-h-[560px] sm:py-28"
-        aria-label={language === 'ro' ? 'Finalul traseului' : 'End of the journey'}
+        className="cinematic-arrival relative isolate overflow-hidden bg-[#061726] text-white"
+        aria-label={language === 'ro' ? 'Drumul merge mai departe' : 'The road continues'}
       >
-        <div className="cinematic-arrival-front absolute inset-0 z-[1]" aria-hidden="true">
-          <Image
-            src="/tow-truck-front.webp"
-            alt=""
-            fill
-            sizes="100vw"
-            className="cinematic-arrival-front-image object-cover"
-          />
-        </div>
-        <div className="cinematic-arrival-front-scrim absolute inset-0 z-[2]" aria-hidden="true" />
-        <div className="cinematic-arrival-grid absolute inset-0" aria-hidden="true" />
-        <div className="cinematic-arrival-horizon absolute inset-x-0 bottom-0 h-1/2" aria-hidden="true" />
-        <div className="relative z-20 mx-auto max-w-7xl px-5 sm:px-8 lg:px-10">
-          <p className="text-xs font-black uppercase tracking-[.2em] text-[#ffd36f]">
-            {language === 'ro' ? 'Fetești · A2 · Asistență rutieră' : 'Fetești · A2 · Roadside assistance'}
-          </p>
-          <h2 className="mt-5 max-w-[660px] text-4xl font-black leading-[.98] tracking-[-.055em] sm:text-6xl lg:text-7xl">
-            {language === 'ro' ? 'Drumul merge ' : 'The road '}
-            <span className="text-[#f6a817]">
-              {language === 'ro' ? 'mai departe.' : 'continues.'}
-            </span>
-          </h2>
-          <p className="mt-7 max-w-[430px] text-base leading-7 text-white/65">
-            {language === 'ro'
-              ? 'De la primul apel până la destinația stabilită, ne ocupăm de transportul confirmat împreună.'
-              : 'From the first call to the agreed destination, we organize the transport confirmed with you.'}
-          </p>
+        <ArrivalMotion />
+        <div className="cinematic-arrival-ambient absolute inset-0" aria-hidden="true" />
+        <div className="relative z-10 mx-auto grid max-w-7xl gap-10 px-5 py-16 sm:px-8 sm:py-20 lg:min-h-[590px] lg:grid-cols-[.82fr_1.18fr] lg:items-center lg:gap-14 lg:px-10 lg:py-24">
+          <div className="cinematic-arrival-copy max-w-xl">
+            <p className="inline-flex items-center gap-2 rounded-full border border-[#f6a817]/30 bg-[#f6a817]/10 px-4 py-2 text-[11px] font-black uppercase tracking-[.16em] text-[#ffd36f]">
+              <span className="h-2 w-2 rounded-full bg-[#f6a817]" aria-hidden="true" />
+              {language === 'ro' ? 'Fetești · A2 · Asistență rutieră' : 'Fetești · A2 · Roadside assistance'}
+            </p>
+            <h2 className="mt-7 max-w-xl text-[2.75rem] font-black leading-[.98] tracking-[-.055em] sm:text-[4rem] lg:text-[4.5rem]">
+              {language === 'ro' ? 'Drumul merge ' : 'The road '}
+              <span className="block text-[#f6a817]">
+                {language === 'ro' ? 'mai departe.' : 'continues.'}
+              </span>
+            </h2>
+            <p className="mt-7 max-w-md text-base leading-8 text-white/70">
+              {language === 'ro'
+                ? 'De la primul apel până la destinația stabilită, ne ocupăm de transportul confirmat împreună.'
+                : 'From the first call to the agreed destination, we organize the transport confirmed with you.'}
+            </p>
+            <div className="mt-9 flex items-center gap-3 text-xs font-black uppercase tracking-[.13em] text-white/45">
+              <span className="h-px w-12 bg-[#f6a817]" aria-hidden="true" />
+              {language === 'ro' ? 'Platformă reală. Intervenții reale.' : 'Real truck. Real roadside support.'}
+            </div>
+          </div>
+
+          <div className="cinematic-arrival-frame group relative h-[310px] overflow-hidden rounded-[1.7rem] border border-white/15 bg-[#13283a] shadow-[0_32px_95px_rgba(0,0,0,.42)] sm:h-[440px] lg:h-[450px]">
+            <div className="cinematic-arrival-picture absolute inset-0">
+              <Image
+                src="/tow-truck-front.webp"
+                alt={language === 'ro'
+                  ? 'Platforma Iveco reală pentru tractări auto, fotografiată din față'
+                  : 'Our real Iveco roadside recovery truck seen from the front'}
+                fill
+                sizes="(max-width: 1023px) 100vw, 60vw"
+                className="cinematic-arrival-image object-cover"
+              />
+            </div>
+            <div className="cinematic-arrival-photo-grade absolute inset-0" aria-hidden="true" />
+            <div className="cinematic-arrival-light absolute inset-0" aria-hidden="true" />
+            <div className="absolute left-5 top-5 z-10 rounded-full border border-white/25 bg-[#061827]/75 px-4 py-2 text-[10px] font-black uppercase tracking-[.15em] text-white shadow-lg backdrop-blur-md sm:left-7 sm:top-7">
+              {language === 'ro' ? 'Din teren' : 'On the road'}
+            </div>
+            <div className="absolute inset-x-0 bottom-0 z-10 flex items-end justify-between gap-3 bg-gradient-to-t from-[#04111f]/85 via-[#04111f]/25 to-transparent px-6 pb-6 pt-20 sm:px-8 sm:pb-8">
+              <span className="text-sm font-black uppercase tracking-[.15em] text-white">IVECO</span>
+              <span className="text-xs font-bold text-white/85">
+                {language === 'ro' ? 'Tractări Auto Fetești' : 'Fetești Roadside Recovery'}
+              </span>
+            </div>
+          </div>
         </div>
       </section>
 
