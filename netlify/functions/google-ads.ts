@@ -6,6 +6,7 @@ import {
   writeLayerEnabled,
 } from '../lib/admin-ads-security';
 import { googleAdsConfigState, readGoogleAdsReport } from '../lib/google-ads';
+import { oauthSetup, readRefreshToken } from '../lib/google-ads-oauth';
 
 export const config: Config = { method: 'GET', path: '/api/admin/google-ads' };
 
@@ -23,13 +24,17 @@ const handler = async (request: Request, _context: Context) => {
     ? Math.min(Math.max(requestedDays, 1), 30)
     : 14;
 
-  const configState = googleAdsConfigState();
+  const oauth = oauthSetup();
+  const storedToken = oauth.ready ? await readRefreshToken() : null;
+  const configState = googleAdsConfigState(Boolean(storedToken));
+  const oauthStatus = { available: oauth.ready, linked: Boolean(storedToken), missing: oauth.missing };
   const editSession = verifyEditSession(request, user);
 
   if (!configState.configured) {
     return Response.json(
       {
         connected: false,
+        oauth: oauthStatus,
         days,
         missingConfiguration: configState.missing,
         edit: {
@@ -49,6 +54,7 @@ const handler = async (request: Request, _context: Context) => {
     return Response.json(
       {
         connected: true,
+        oauth: oauthStatus,
         days,
         missingConfiguration: [],
         edit: {
@@ -70,6 +76,7 @@ const handler = async (request: Request, _context: Context) => {
     return Response.json(
       {
         connected: false,
+        oauth: oauthStatus,
         days,
         missingConfiguration: [],
         connectionError: 'Google Ads API nu a putut fi interogat.',
