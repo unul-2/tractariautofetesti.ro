@@ -30,3 +30,6 @@ gclid/gbraid/wbraid sunt folosite ca semnale pentru sursa CPC, fără
 a păstra sau transmite identificatorii clickului. Sursa UTM se păstrează
 doar pe durata sesiunii în browser pentru atribuire prin pagini.
 Nu presupune legarea proprietății GA4 din HYPD de acest site până la verificare.
+
+Production event data uses a named Netlify Blob store selected by CONTEXT,
+so it persists across deploys; preview builds remain isolated.

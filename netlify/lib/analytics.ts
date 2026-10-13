@@ -38,7 +38,10 @@ function analyticsStore() {
     }
   ).Netlify;
 
-  return netlify?.context?.deploy?.context === 'production'
+  // CONTEXT is populated by Netlify during builds and Function invocations.
+  // A named store must be used in production so metrics survive new deploys.
+  const deployContext = process.env.CONTEXT || netlify?.context?.deploy?.context;
+  return deployContext === 'production'
     ? getStore(storeName)
     : getDeployStore(storeName);
 }
