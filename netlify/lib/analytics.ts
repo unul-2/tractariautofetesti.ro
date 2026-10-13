@@ -38,7 +38,10 @@ function analyticsStore() {
     }
   ).Netlify;
 
-  return netlify?.context?.deploy?.context === 'production'
+  // CONTEXT is populated by Netlify during builds and Function invocations.
+  // A named store must be used in production so metrics survive new deploys.
+  const deployContext = process.env.CONTEXT || netlify?.context?.deploy?.context;
+  return deployContext === 'production'
     ? getStore(storeName)
     : getDeployStore(storeName);
 }
@@ -72,7 +75,8 @@ export async function readEvents(days: number) {
 
   for (let index = 0; index < days; index += 1) {
     const date = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate() - index));
-    const result = await store.list({ prefix: `events/${utcDay(date)}/` });
+    // Netlify Blobs list() automatically collects every page when paginate is false.
+    const result = await store.list({ prefix: 'events/' + utcDay(date) + '/' });
     keys.push(...result.blobs.map((blob) => blob.key));
   }
 

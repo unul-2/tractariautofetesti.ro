@@ -4,6 +4,9 @@ import { type SyntheticEvent, useEffect, useState } from 'react';
 import { getUser, handleAuthCallback, login, logout, type User } from '@netlify/identity';
 
 type Metrics = {
+  source?: string;
+  measuredAt?: string;
+  consentRequired?: boolean;
   summary: {
     sessions: number;
     pageViews: number;
@@ -18,6 +21,8 @@ type Metrics = {
     whatsappClicks: number;
     whatsappLocationClicks: number;
     contactActions: number;
+    paidSessions?: number;
+    paidContactActions?: number;
   };
   devices: { label: string; value: number }[];
   sources: { label: string; value: number }[];
@@ -100,6 +105,8 @@ const demoMetrics: Metrics = {
     whatsappClicks: 8,
     whatsappLocationClicks: 5,
     contactActions: 20,
+    paidSessions: 35,
+    paidContactActions: 14,
   },
   devices: [
     { label: 'mobile', value: 71 },
@@ -250,6 +257,7 @@ export function AdminDashboard() {
 
   const loadMetrics = async (selectedDays = days) => {
     setStatus('loading');
+    setMetrics(null);
     const response = await fetch(`/api/admin/metrics?days=${selectedDays}`, { credentials: 'same-origin', cache: 'no-store' });
     if (response.status === 401 || response.status === 403) {
       setStatus('unauthorized');
@@ -265,12 +273,13 @@ export function AdminDashboard() {
 
   const loadAds = async (selectedDays = days) => {
     setAdsStatus('loading');
+    setAds(null);
     const response = await fetch(`/api/admin/google-ads?days=${selectedDays}`, {
       credentials: 'same-origin',
       cache: 'no-store',
     });
     const payload = (await response.json().catch(() => null)) as GoogleAdsPayload | null;
-    if (payload) setAds(payload);
+    if (payload && (response.ok || response.status === 502)) setAds(payload);
     setAdsStatus(response.ok || response.status === 502 ? 'ready' : 'error');
   };
 
@@ -405,7 +414,6 @@ export function AdminDashboard() {
 
   if (!user || status === 'unauthorized') return <LoginPanel onLogin={handleLogin} />;
 
-  const googleSessions = metrics?.google.sessions ?? 0;
   const adsSummary = ads?.report?.summary ?? null;
 
   return (
@@ -456,7 +464,7 @@ export function AdminDashboard() {
               <p className="text-xs font-extrabold uppercase tracking-[.14em] text-[#f6b62e]">Privire rapidă</p>
               <h2 className="mt-2 text-2xl font-extrabold tracking-[-.04em]">Site vs Google Ads</h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-white/65">
-                Aceeași perioadă de {days} zile, două sisteme de măsurare. Valorile sunt puse alături ca să vezi rapid traseul campanie → site → contact.
+                Aceeași perioadă de {days} zile, două surse independente: site (numai cu consimțământ) și Google Ads. Clickul pe Sună nu este un apel confirmat.
               </p>
             </div>
             <span className="w-fit rounded-full bg-white/10 px-3 py-1.5 text-xs font-extrabold uppercase tracking-[.1em] text-white/75">
@@ -464,11 +472,11 @@ export function AdminDashboard() {
             </span>
           </div>
 
-          <div className="grid gap-4 p-4 lg:grid-cols-2 lg:p-6">
+          <div className="grid gap-4 p-4 md:grid-cols-2 lg:p-6">
             <ComparisonLane
-              eyebrow="Date proprii"
+              eyebrow="Date proprii · consimțământ"
               title="Site"
-              status="Netlify"
+              status="Netlify Blobs"
               items={[
                 {
                   label: 'Sesiuni totale',
@@ -476,9 +484,9 @@ export function AdminDashboard() {
                   hint: 'Sesiuni măsurate pe landing page.',
                 },
                 {
-                  label: 'Sesiuni din Google',
-                  value: number(metrics.google.sessions),
-                  hint: 'Trafic cu sursă Google identificată de site.',
+                  label: 'Sesiuni Google Ads identificate',
+                  value: number(metrics.google.paidSessions ?? 0),
+                  hint: 'Sesiuni marcate CPC sau auto-tagging Google.',
                 },
                 {
                   label: 'Apăsări pe „Sună”',
@@ -491,9 +499,9 @@ export function AdminDashboard() {
                   hint: 'Deschideri WhatsApp, inclusiv cele cu locație.',
                 },
                 {
-                  label: 'Contact din trafic Google',
-                  value: number(metrics.google.contactActions),
-                  hint: 'Sună + WhatsApp din sesiunile marcate cu sursă Google.',
+                  label: 'Contacte din trafic Ads identificat',
+                  value: number(metrics.google.paidContactActions ?? 0),
+                  hint: 'Apăsări Sună + WhatsApp din sesiunile Google CPC.',
                 },
                 {
                   label: 'Rată click pe „Sună”',
@@ -506,7 +514,7 @@ export function AdminDashboard() {
             <ComparisonLane
               eyebrow="Platformă publicitară"
               title="Google Ads"
-              status={ads?.connected ? 'Read only' : 'Neconectat'}
+              status={adsStatus === 'loading' ? 'Se încarcă' : ads?.connected ? 'Live · read only' : 'Neconectat'}
               items={[
                 {
                   label: 'Afișări',
@@ -557,8 +565,8 @@ export function AdminDashboard() {
               {[
                 ['Afișări Ads', adsSummary ? number(adsSummary.impressions) : '—'],
                 ['Clickuri Ads', adsSummary ? number(adsSummary.clicks) : '—'],
-                ['Sesiuni Google pe site', number(metrics.google.sessions)],
-                ['Contacte Google pe site', number(metrics.google.contactActions)],
+                ['Sesiuni Ads pe site', number(metrics.google.paidSessions ?? 0)],
+                ['Contacte Ads pe site', number(metrics.google.paidContactActions ?? 0)],
                 ['Conversii Ads', adsSummary ? number(adsSummary.conversions, 1) : '—'],
               ].map(([label, value], index) => (
                 <div key={String(label)} className="relative rounded-xl border border-[#dce2e9] bg-[#f8fafb] p-4">
@@ -572,7 +580,7 @@ export function AdminDashboard() {
             <div className="mt-4 rounded-xl border border-[#ead8ae] bg-[#fff9eb] p-4 text-sm leading-6 text-[#714b08]">
               {adsSummary ? (
                 <>
-                  Google Ads raportează <strong>{number(adsSummary.clicks)} clickuri</strong>, iar site-ul a măsurat <strong>{number(metrics.google.sessions)} sesiuni cu sursă Google</strong> și <strong>{number(metrics.google.contactActions)} acțiuni de contact din acest trafic</strong>. Comparăm tendința, nu cerem egalitate perfectă între cifre.
+                  Google Ads raportează <strong>{number(adsSummary.clicks)} clickuri</strong>, iar site-ul a măsurat <strong>{number(metrics.google.paidSessions ?? 0)} sesiuni marcate Google CPC</strong> și <strong>{number(metrics.google.paidContactActions ?? 0)} acțiuni de contact</strong>. Comparăm tendința, nu cerem egalitate perfectă între cifre.
                 </>
               ) : (
                 <>
@@ -640,6 +648,12 @@ export function AdminDashboard() {
                     ? ads.connectionError
                     : 'Lipsesc credentialele Google Ads din variabilele securizate Netlify. Site-ul și dashboardul rămân funcționale.'}
                 </p>
+                {ads.missingConfiguration.length ? (
+                  <p className="mt-3 text-xs leading-5 text-[#607183]">
+                    Configurare server necesară: {ads.missingConfiguration.join(' · ')}.
+                    Adaugă secretele numai în Netlify Environment Variables.
+                  </p>
+                ) : null}
                 {ads.requestId ? <p className="mt-2 text-xs text-[#718294]">Google request ID: {ads.requestId}</p> : null}
               </div>
             ) : ads?.report ? (
@@ -663,7 +677,7 @@ export function AdminDashboard() {
                 <div className="mt-4 rounded-xl border border-[#ead8ae] bg-[#fff9eb] p-4">
                   <p className="text-sm font-extrabold text-[#714b08]">Ads → site, ultimele {days} zile</p>
                   <p className="mt-1 text-sm leading-6 text-[#7c6334]">
-                    {number(ads.report.summary.clicks)} clickuri Google Ads · {googleSessions} sesiuni măsurate cu sursă Google · {metrics?.summary.callClicks ?? 0} apăsări pe „Sună” pe site.
+                    {number(ads.report.summary.clicks)} clickuri Google Ads · {number(metrics?.google.paidSessions ?? 0)} sesiuni Google CPC pe site · {number(metrics?.google.paidContactActions ?? 0)} acțiuni de contact.
                   </p>
                 </div>
 

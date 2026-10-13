@@ -85,9 +85,10 @@ export function googleAdsConfigState() {
 
   const missing: string[] = [];
   if (!customerId) missing.push('GOOGLE_ADS_CUSTOMER_ID');
+  if (!env('GOOGLE_ADS_DEVELOPER_TOKEN')) missing.push('GOOGLE_ADS_DEVELOPER_TOKEN');
   if (!serviceAccountReady && !refreshTokenReady) {
     missing.push(
-      'GOOGLE_ADS_SERVICE_ACCOUNT_EMAIL + GOOGLE_ADS_SERVICE_ACCOUNT_PRIVATE_KEY',
+      'GOOGLE_ADS_CLIENT_ID + GOOGLE_ADS_CLIENT_SECRET + GOOGLE_ADS_REFRESH_TOKEN (sau service account delegat)',
     );
   }
 
