@@ -19,7 +19,6 @@ type GoogleAdsConfig = {
   apiVersion: string;
   auth: GoogleAdsAuth;
   customerId: string;
-  developerToken?: string;
   loginCustomerId?: string;
 };
 
@@ -85,7 +84,6 @@ export function googleAdsConfigState() {
 
   const missing: string[] = [];
   if (!customerId) missing.push('GOOGLE_ADS_CUSTOMER_ID');
-  if (!env('GOOGLE_ADS_DEVELOPER_TOKEN')) missing.push('GOOGLE_ADS_DEVELOPER_TOKEN');
   if (!serviceAccountReady && !refreshTokenReady) {
     missing.push(
       'GOOGLE_ADS_CLIENT_ID + GOOGLE_ADS_CLIENT_SECRET + GOOGLE_ADS_REFRESH_TOKEN (sau service account delegat)',
@@ -126,7 +124,6 @@ function getConfig(): GoogleAdsConfig {
   return {
     apiVersion: env('GOOGLE_ADS_API_VERSION') || defaultApiVersion,
     auth,
-    developerToken: env('GOOGLE_ADS_DEVELOPER_TOKEN') || undefined,
     customerId: cleanCustomerId(env('GOOGLE_ADS_CUSTOMER_ID')),
     loginCustomerId: env('GOOGLE_ADS_LOGIN_CUSTOMER_ID')
       ? cleanCustomerId(env('GOOGLE_ADS_LOGIN_CUSTOMER_ID'))
@@ -214,9 +211,6 @@ async function googleAdsRequest(
     authorization: `Bearer ${accessToken}`,
     'content-type': 'application/json',
   };
-  if (config.developerToken) {
-    headers['developer-token'] = config.developerToken;
-  }
   if (config.loginCustomerId) {
     headers['login-customer-id'] = config.loginCustomerId;
   }
