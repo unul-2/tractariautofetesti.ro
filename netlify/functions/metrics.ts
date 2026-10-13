@@ -82,10 +82,22 @@ const handler = async (request: Request, _context: Context) => {
   const googleWhatsappLocationClicks = googleEvents.filter(
     (event) => event.name === 'whatsapp_location_click',
   ).length;
+  const paidEvents = googleEvents.filter((event) =>
+    /^(cpc|ppc|paidsearch|paid_search)$/i.test(event.campaign.utm_medium || ''),
+  );
+  const paidSessions = new Set(paidEvents.map((event) => event.sessionHash));
+  const paidContactActions = paidEvents.filter((event) =>
+    event.name === 'call_click' ||
+    event.name === 'whatsapp_click' ||
+    event.name === 'whatsapp_location_click',
+  ).length;
 
   return Response.json(
     {
       days,
+      source: 'netlify-blobs',
+      measuredAt: new Date().toISOString(),
+      consentRequired: true,
       summary: {
         sessions: uniqueSessions.size,
         pageViews,
@@ -100,6 +112,8 @@ const handler = async (request: Request, _context: Context) => {
         whatsappClicks: googleWhatsappClicks,
         whatsappLocationClicks: googleWhatsappLocationClicks,
         contactActions: googleCallClicks + googleWhatsappClicks,
+        paidSessions: paidSessions.size,
+        paidContactActions,
       },
       daily: daily(events, days),
       devices: countBy(events, (event) => event.device),

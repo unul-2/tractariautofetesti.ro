@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 export type SiteEventName =
   | 'page_view'
@@ -17,6 +18,7 @@ export type ServiceAnalyticsKey =
 
 const consentKey = 'taf-cookie-consent-v1';
 const sessionKey = 'taf-analytics-session-v1';
+const campaignSessionKey = 'taf-campaign-attribution-v2';
 const allowedCampaignKeys = ['utm_source', 'utm_medium', 'utm_campaign'] as const;
 
 function hasMarketingConsent() {
@@ -42,12 +44,34 @@ function getSessionId() {
 
 function campaignContext() {
   const params = new URLSearchParams(window.location.search);
-  return Object.fromEntries(
+  const current = Object.fromEntries(
     allowedCampaignKeys.flatMap((key) => {
       const value = params.get(key)?.trim();
       return value ? [[key, value.slice(0, 80)]] : [];
     }),
-  );
+  ) as Record<(typeof allowedCampaignKeys)[number], string>;
+  // Do not store or transmit the raw Google click identifier.
+  const googleAdsClick = ['gclid', 'gbraid', 'wbraid'].some((key) => params.has(key));
+  if (googleAdsClick) {
+    current.utm_source ||= 'google';
+    current.utm_medium ||= 'cpc';
+  }
+  if (Object.keys(current).length) {
+    window.sessionStorage.setItem(campaignSessionKey, JSON.stringify(current));
+    return current;
+  }
+  try {
+    const stored = window.sessionStorage.getItem(campaignSessionKey);
+    if (!stored) return {};
+    const parsed: unknown = JSON.parse(stored);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+    return Object.fromEntries(
+      allowedCampaignKeys.flatMap((key) => {
+        const value = (parsed as Record<string, unknown>)[key];
+        return typeof value === 'string' && value.length <= 80 ? [[key, value]] : [];
+      }),
+    );
+  } catch { return {}; }
 }
 
 export function trackSiteEvent(name: SiteEventName, service?: ServiceAnalyticsKey) {
@@ -73,9 +97,10 @@ export function trackSiteEvent(name: SiteEventName, service?: ServiceAnalyticsKe
 }
 
 export function SiteAnalytics() {
+  const pathname = usePathname();
   useEffect(() => {
     trackSiteEvent('page_view');
-  }, []);
+  }, [pathname]);
 
   return null;
 }
