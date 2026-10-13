@@ -14,7 +14,7 @@
 
 ## Conectare Google Ads direct la Netlify, numai citire
 Setare în Netlify Environment Variables, production / functions, secret:
-GOOGLE_ADS_CUSTOMER_ID, GOOGLE_ADS_DEVELOPER_TOKEN, GOOGLE_ADS_CLIENT_ID,
+GOOGLE_ADS_CUSTOMER_ID, GOOGLE_ADS_CLIENT_ID,
 GOOGLE_ADS_CLIENT_SECRET, GOOGLE_ADS_REFRESH_TOKEN.
 GOOGLE_ADS_LOGIN_CUSTOMER_ID este opțional (pentru MCC).
 Nu copia niciun secret în GitHub, NEXT_PUBLIC sau chat.
@@ -33,3 +33,10 @@ Nu presupune legarea proprietății GA4 din HYPD de acest site până la verific
 
 Production event data uses a named Netlify Blob store selected by CONTEXT,
 so it persists across deploys; preview builds remain isolated.
+
+## October 2026 Google Ads API authentication
+As of September 9, 2026, developer tokens are sunset. OAuth credentials
+must belong to a Google Cloud project with approved Google Ads API production
+access (Explorer/Basic/Standard as appropriate). Do NOT request a new developer
+token in Google Ads API Center. The backend does not require/send this header.
+Official migration: https://developers.google.com/google-ads/api/docs/api-policy/developer-token
