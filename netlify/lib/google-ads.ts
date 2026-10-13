@@ -1,4 +1,5 @@
 import { createSign } from 'node:crypto';
+import { readRefreshToken } from './google-ads-oauth';
 
 const defaultApiVersion = 'v25';
 
@@ -72,7 +73,7 @@ function cleanCustomerId(value: string) {
   return value.replace(/-/g, '');
 }
 
-export function googleAdsConfigState() {
+export function googleAdsConfigState(hasSavedToken = false) {
   const customerId = env('GOOGLE_ADS_CUSTOMER_ID');
   const serviceAccountReady =
     Boolean(env('GOOGLE_ADS_SERVICE_ACCOUNT_EMAIL')) &&
@@ -80,7 +81,7 @@ export function googleAdsConfigState() {
   const refreshTokenReady =
     Boolean(env('GOOGLE_ADS_CLIENT_ID')) &&
     Boolean(env('GOOGLE_ADS_CLIENT_SECRET')) &&
-    Boolean(env('GOOGLE_ADS_REFRESH_TOKEN'));
+    (Boolean(env('GOOGLE_ADS_REFRESH_TOKEN')) || hasSavedToken);
 
   const missing: string[] = [];
   if (!customerId) missing.push('GOOGLE_ADS_CUSTOMER_ID');
@@ -92,17 +93,20 @@ export function googleAdsConfigState() {
 
   return {
     configured: missing.length === 0,
-    authMode: serviceAccountReady
-      ? ('service-account' as const)
-      : refreshTokenReady
-        ? ('refresh-token' as const)
-        : null,
+    authMode: hasSavedToken && refreshTokenReady
+      ? ('refresh-token' as const)
+      : serviceAccountReady
+        ? ('service-account' as const)
+        : refreshTokenReady
+          ? ('refresh-token' as const)
+          : null,
     missing,
   };
 }
 
-function getConfig(): GoogleAdsConfig {
-  const state = googleAdsConfigState();
+async function getConfig(): Promise<GoogleAdsConfig> {
+  const savedToken = await readRefreshToken();
+  const state = googleAdsConfigState(Boolean(savedToken));
   if (!state.configured || !state.authMode) {
     throw new Error(`Google Ads configuration incomplete: ${state.missing.join(', ')}`);
   }
@@ -118,7 +122,7 @@ function getConfig(): GoogleAdsConfig {
           kind: 'refresh-token',
           clientId: env('GOOGLE_ADS_CLIENT_ID'),
           clientSecret: env('GOOGLE_ADS_CLIENT_SECRET'),
-          refreshToken: env('GOOGLE_ADS_REFRESH_TOKEN'),
+          refreshToken: savedToken || env('GOOGLE_ADS_REFRESH_TOKEN'),
         };
 
   return {
@@ -251,7 +255,7 @@ function microsToRon(value: string | number | undefined) {
 }
 
 export async function readGoogleAdsReport(days: number) {
-  const config = getConfig();
+  const config = await getConfig();
   const range = reportRange(days);
   const query = `
     SELECT
@@ -336,7 +340,7 @@ export async function readGoogleAdsReport(days: number) {
 }
 
 export async function updateCampaignStatus(campaignId: string, status: 'ENABLED' | 'PAUSED') {
-  const config = getConfig();
+  const config = await getConfig();
   return googleAdsRequest(config, 'campaigns:mutate', {
     operations: [
       {
@@ -354,7 +358,7 @@ export async function updateCampaignBudget(
   budgetResourceName: string,
   amountMicros: number,
 ) {
-  const config = getConfig();
+  const config = await getConfig();
   return googleAdsRequest(config, 'campaignBudgets:mutate', {
     operations: [
       {

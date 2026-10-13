@@ -1,7 +1,7 @@
 'use client';
 
 import { type SyntheticEvent, useEffect, useState } from 'react';
-import { getUser, handleAuthCallback, login, logout, type User } from '@netlify/identity';
+import { getSettings, getUser, handleAuthCallback, login, logout, oauthLogin, type User } from '@netlify/identity';
 
 type Metrics = {
   source?: string;
@@ -31,6 +31,7 @@ type Metrics = {
 
 type GoogleAdsPayload = {
   connected: boolean;
+  oauth?: { available: boolean; linked: boolean; missing: string[] };
   days: number;
   missingConfiguration: string[];
   connectionError?: string;
@@ -139,6 +140,13 @@ function LoginPanel({ onLogin }: { onLogin: (email: string, password: string) =>
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [googleIdentityEnabled, setGoogleIdentityEnabled] = useState(false);
+
+  useEffect(() => {
+    void getSettings().then(settings => {
+      setGoogleIdentityEnabled(Boolean(settings.providers.google));
+    }).catch(() => setGoogleIdentityEnabled(false));
+  }, []);
 
   const submit = async (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -167,10 +175,16 @@ function LoginPanel({ onLogin }: { onLogin: (email: string, password: string) =>
       <button className="min-h-11 rounded-lg bg-[#0c2035] px-4 text-sm font-extrabold text-white transition hover:bg-[#173a58] disabled:cursor-wait disabled:opacity-60" type="submit" disabled={busy}>
         {busy ? 'Se verifică…' : 'Intră în dashboard'}
       </button>
+      {googleIdentityEnabled ? (
+        <button className="min-h-11 rounded-lg border border-[#cbd6e2] bg-white px-4 text-sm font-extrabold text-[#24364d]"
+          type="button" onClick={() => oauthLogin('google')}>
+          Intră cu Google (administrator invitat)
+        </button>
+      ) : null}
       <p className="text-xs leading-5 text-[#65788b]">
         {demoDashboardEnabled
-          ? 'Mod demo de prezentare: date fictive, fără acces la Netlify sau metrici reale.'
-          : 'Conturile sunt doar pe invitație. Nu există înregistrare publică.'}
+          ? 'Mod demo disponibil separat; datele demo nu pot conecta Google Ads.'
+          : 'Acces real numai prin invitație Netlify Identity și rol admin.'}
       </p>
     </form>
   );
@@ -253,6 +267,8 @@ export function AdminDashboard() {
   const [pinMessage, setPinMessage] = useState<string | null>(null);
   const [days, setDays] = useState<7 | 14 | 30>(14);
   const [audit, setAudit] = useState<AuditPayload | null>(null);
+  const [oauthMessage, setOauthMessage] = useState<string | null>(null);
+  const [disconnecting, setDisconnecting] = useState(false);
   const [auditStatus, setAuditStatus] = useState<'idle' | 'loading' | 'ready' | 'error'>('idle');
 
   const loadMetrics = async (selectedDays = days) => {
@@ -313,9 +329,15 @@ export function AdminDashboard() {
   };
 
   useEffect(() => {
+    const oauthResult = new URLSearchParams(window.location.search).get('ads');
     void (async () => {
       try {
         await handleAuthCallback();
+        if (oauthResult === 'connected') {
+          setOauthMessage('Google Ads a fost autorizat. Se încarcă raportul.');
+        } else if (oauthResult === 'authorization-failed') {
+          setOauthMessage('Conectarea Google Ads nu s-a finalizat. Verifică autorizarea Google și încearcă din nou.');
+        }
         const currentUser = await getUser();
         setUser(currentUser);
         if (currentUser) await Promise.all([loadMetrics(14), loadAds(14), loadAudit()]);
@@ -357,6 +379,21 @@ export function AdminDashboard() {
 
     await logout();
     window.location.assign('/admin');
+  };
+
+  const disconnectGoogleAds = async () => {
+    if (!window.confirm('Revoci accesul site-ului la Google Ads? Datele site-ului rămân intacte.')) return;
+    setDisconnecting(true);
+    try {
+      const response = await fetch('/api/admin/google-ads/disconnect', {
+        method: 'POST', credentials: 'same-origin',
+      });
+      if (!response.ok) throw new Error('disconnect failed');
+      setOauthMessage('Accesul Google Ads a fost revocat pentru site.');
+      await loadAds();
+    } catch {
+      setOauthMessage('Nu s-a putut revoca autorizarea. Reîncearcă.');
+    } finally { setDisconnecting(false); }
   };
 
   const unlockAdsEdit = async (event: SyntheticEvent<HTMLFormElement>) => {
@@ -423,7 +460,7 @@ export function AdminDashboard() {
           <p className="text-sm font-extrabold text-[#1e344b]">{user.email}</p>
           <p className="mt-1 text-sm text-[#52657a]">
             {isDemoDashboard
-              ? 'Demo de prezentare · date fictive, fără acces la metricile reale'
+              ? 'DEMO — date fictive. Conectarea Google Ads necesită administrator real.'
               : `Ultimele ${days} zile · site + Google Ads în același dashboard`}
           </p>
         </div>
@@ -447,6 +484,7 @@ export function AdminDashboard() {
         </div>
       </div>
 
+      {oauthMessage ? <output className="mt-4 block rounded-lg border border-[#dce2e9] bg-white p-3 text-sm font-semibold text-[#30465d]">{oauthMessage}</output> : null}
       {isDemoDashboard ? (
         <output className="mt-5 block rounded-2xl border border-[#f3c76b] bg-[#fff7e7] p-4 text-[#714b08]">
           <p className="text-sm font-extrabold">DEMO DE PREZENTARE</p>
@@ -632,6 +670,45 @@ export function AdminDashboard() {
           </span>
         </div>
 
+        {!isDemoDashboard ? (
+          <div className="border-b border-[#e3e8ed] bg-[#f8fafc] px-6 py-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-extrabold text-[#1e344b]">Conectare Google Ads direct din site</p>
+                <p className="mt-1 max-w-xl text-xs leading-5 text-[#607183]">
+                  Te autentifici la Google, acorzi permisiunea și dashboardul citește rapoartele automat prin API.
+                  Contul tău Google și tokenul nu sunt expuse în browser.
+                </p>
+                {ads?.oauth && !ads.oauth.available ? (
+                  <p className="mt-2 text-xs text-[#986417]">
+                    Mai trebuie pregătit OAuth în Google Cloud și variabilele securizate Netlify:
+                    {' '}{ads.oauth.missing.join(', ')}.
+                  </p>
+                ) : null}
+              </div>
+              <div className="flex shrink-0 flex-wrap gap-2">
+                <a
+                  href={ads?.oauth?.available ? '/api/admin/google-ads/connect' : undefined}
+                  aria-disabled={!ads?.oauth?.available || adsStatus === 'loading'}
+                  onClick={(event) => { if (!ads?.oauth?.available || adsStatus === 'loading') event.preventDefault(); }}
+                  className={'inline-flex min-h-11 items-center justify-center rounded-lg px-4 text-sm font-extrabold ' +
+                    (ads?.oauth?.available && adsStatus !== 'loading'
+                      ? 'bg-[#0c2035] text-white hover:bg-[#19405f]'
+                      : 'cursor-not-allowed bg-[#dce4eb] text-[#64778a]')}
+                >
+                  {ads?.oauth?.linked ? 'Reconectează Google Ads' : 'Conectează Google Ads'}
+                </a>
+                {ads?.oauth?.linked ? (
+                  <button type="button" disabled={disconnecting}
+                    onClick={() => void disconnectGoogleAds()}
+                    className="min-h-11 rounded-lg border border-[#d0dbe4] bg-white px-4 text-sm font-bold text-[#46576a]">
+                    {disconnecting ? 'Se revocă…' : 'Deconectează'}
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        ) : null}
         <div className="grid gap-6 p-6 lg:grid-cols-[1.35fr_.65fr]">
           <div>
             {isDemoDashboard ? (
